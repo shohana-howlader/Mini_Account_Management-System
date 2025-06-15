@@ -1,0 +1,88 @@
+﻿@model Mini_Account_Management_System.Models.Screen
+
+@{
+    ViewData["Title"] = "Create Screen";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-plus"></i> Create New Screen
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="ScreenName" class="form-label">
+                                        <i class="fas fa-desktop"></i> Screen Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="ScreenName" class="form-control" placeholder="Enter screen name" />
+                                    <span asp-validation-for="ScreenName" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="URL" class="form-label">
+                                        <i class="fas fa-link"></i> URL
+                                    </label>
+                                    <input asp-for="URL" class="form-control" placeholder="Enter URL (optional)" />
+                                    <span asp-validation-for="URL" class="text-danger"></span>
+                                    <div class="form-text">Optional: Enter the URL for this screen</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <hr class="my-4">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Create Screen
+                                </button>
+                                <a asp-action="Index" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to List
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Add URL validation
+        document.querySelector('input[name="URL"]').addEventListener('blur', function () {
+            const url = this.value.trim();
+            if (url && !url.match(/^https?:\/\/.+/)) {
+                this.classList.add('is-invalid');
+                let feedback = this.parentNode.querySelector('.invalid-feedback');
+                if (!feedback) {
+                    feedback = document.createElement('div');
+                    feedback.className = 'invalid-feedback';
+                    this.parentNode.appendChild(feedback);
+                }
+                feedback.textContent = 'Please enter a valid URL starting with http:// or https://';
+            } else {
+                this.classList.remove('is-invalid');
+                const feedback = this.parentNode.querySelector('.invalid-feedback');
+                if (feedback) {
+                    feedback.remove();
+                }
+            }
+        });
+    </script>
+}
