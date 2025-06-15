@@ -1,0 +1,31 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Mini_Account_Management_System.Models
+{
+    public class User
+    {
+        public int Id { get; set; }
+
+        [Required]
+        [StringLength(100)]
+        [Display(Name = "User Name")]
+        public string UserName { get; set; }
+
+        [Required]
+        [StringLength(255)]
+        [DataType(DataType.Password)]
+        public string Password { get; set; }
+
+        [Required]
+        [Display(Name = "Role")]
+        public int RoleId { get; set; }
+
+        [Display(Name = "Created Date")]
+        public DateTime CreatedDate { get; set; }
+
+        // Navigation property
+        public virtual Role? Role { get; set; }
+    }
+
+   
+}
