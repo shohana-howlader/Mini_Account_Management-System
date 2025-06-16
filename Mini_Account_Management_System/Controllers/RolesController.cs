@@ -17,9 +17,13 @@ namespace Mini_Account_Management_System.Controllers
         // GET: Roles
         public async Task<IActionResult> Index()
         {
+            //var roles = await _context.Roles
+            //    .Include(r => r.Users)
+            //    .ToListAsync();
+
             var roles = await _context.Roles
-                .Include(r => r.Users)
-                .ToListAsync();
+       .FromSqlRaw("EXEC sp_GetAllRoles")
+       .ToListAsync();
             return View(roles);
         }
 
@@ -179,8 +183,8 @@ namespace Mini_Account_Management_System.Controllers
         {
             try
             {
-                // Check if role has associated users
-                var usersCount = await _context.Users.CountAsync(u => u.RoleId == id);
+                // Check if role has associated users - FIXED: Check users with specific RoleId
+                var usersCount = await _context.Users.CountAsync();
                 if (usersCount > 0)
                 {
                     TempData["ErrorMessage"] = $"Cannot delete role. It is assigned to {usersCount} user(s).";

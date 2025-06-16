@@ -18,9 +18,14 @@ namespace Mini_Account_Management_System.Controllers
         // GET: Users
         public async Task<IActionResult> Index()
         {
+            //var users = await _context.Users
+            // .Include(u => u.Role)
+            // .ToListAsync();
+
             var users = await _context.Users
-                .Include(u => u.Role)
-                .ToListAsync();
+        .FromSqlRaw("EXEC sp_GetAllUsers_N")
+        .ToListAsync();
+
             return View(users);
         }
 
@@ -33,7 +38,6 @@ namespace Mini_Account_Management_System.Controllers
             }
 
             var user = await _context.Users
-                .Include(u => u.Role)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (user == null)
@@ -65,7 +69,6 @@ namespace Mini_Account_Management_System.Controllers
                     {
                         new SqlParameter("@UserName", user.UserName),
                         new SqlParameter("@Password", user.Password), // Hash password in production
-                        new SqlParameter("@RoleId", user.RoleId),
                         new SqlParameter("@CreatedDate", DateTime.Now)
                     };
 
@@ -81,7 +84,7 @@ namespace Mini_Account_Management_System.Controllers
                     ModelState.AddModelError("", "Error creating user: " + ex.Message);
                 }
             }
-            ViewData["RoleId"] = new SelectList(_context.Roles, "Id", "RoleName", user.RoleId);
+            ViewData["RoleId"] = new SelectList(_context.Roles, "Id");
             return View(user);
         }
 
@@ -98,7 +101,7 @@ namespace Mini_Account_Management_System.Controllers
             {
                 return NotFound();
             }
-            ViewData["RoleId"] = new SelectList(_context.Roles, "Id", "RoleName", user.RoleId);
+            ViewData["RoleId"] = new SelectList(_context.Roles);
             return View(user);
         }
 
@@ -121,8 +124,7 @@ namespace Mini_Account_Management_System.Controllers
                     {
                         new SqlParameter("@Id", user.Id),
                         new SqlParameter("@UserName", user.UserName),
-                        new SqlParameter("@Password", user.Password), // Hash password in production
-                        new SqlParameter("@RoleId", user.RoleId)
+                        new SqlParameter("@Password", user.Password)
                     };
 
                     await _context.Database.ExecuteSqlRawAsync(
@@ -137,7 +139,7 @@ namespace Mini_Account_Management_System.Controllers
                     ModelState.AddModelError("", "Error updating user: " + ex.Message);
                 }
             }
-            ViewData["RoleId"] = new SelectList(_context.Roles, "Id", "RoleName", user.RoleId);
+            ViewData["RoleId"] = new SelectList(_context.Roles, "Id");
             return View(user);
         }
 
@@ -150,7 +152,6 @@ namespace Mini_Account_Management_System.Controllers
             }
 
             var user = await _context.Users
-                .Include(u => u.Role)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (user == null)
             {

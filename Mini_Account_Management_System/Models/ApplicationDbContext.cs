@@ -16,11 +16,6 @@ namespace Mini_Account_Management_System.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // User-Role relationship
-            modelBuilder.Entity<User>()
-                .HasOne(u => u.Role)
-                .WithMany(r => r.Users)
-                .HasForeignKey(u => u.RoleId);
 
             // Account self-referencing relationship
           

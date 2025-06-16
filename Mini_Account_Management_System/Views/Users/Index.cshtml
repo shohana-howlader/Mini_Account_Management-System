@@ -36,7 +36,6 @@
                                     <th>ID</th>
                                     <th>Username</th>
                                     <th>Password</th>
-                                    <th>Role</th>
                                     <th>Created Date</th>
                                     <th>Actions</th>
                                 </tr>
@@ -59,9 +58,6 @@
                                                     <i class="fas fa-eye" id="eye-icon-@item.Id"></i>
                                                 </button>
                                             </div>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-info">@Html.DisplayFor(modelItem => item.Role.RoleName)</span>
                                         </td>
                                         <td>@Html.DisplayFor(modelItem => item.CreatedDate)</td>
                                         <td>

@@ -16,15 +16,11 @@ namespace Mini_Account_Management_System.Models
         [DataType(DataType.Password)]
         public string Password { get; set; }
 
-        [Required]
-        [Display(Name = "Role")]
-        public int RoleId { get; set; }
-
+        
         [Display(Name = "Created Date")]
         public DateTime CreatedDate { get; set; }
 
-        // Navigation property
-        public virtual Role? Role { get; set; }
+        
     }
 
    

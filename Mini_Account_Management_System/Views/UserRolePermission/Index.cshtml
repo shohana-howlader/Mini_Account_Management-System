@@ -4,6 +4,17 @@
     ViewData["Title"] = "User Role Permissions";
 }
 
+<style>
+    /* Make all table cell text black */
+    #permissionsTable td {
+        color: black !important;
+    }
+    
+    #permissionsTable td .text-muted {
+        color: #6c757d !important;
+    }
+</style>
+
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
@@ -36,6 +47,7 @@
                         <table class="table table-striped table-bordered table-hover" id="permissionsTable">
                             <thead class="thead-dark">
                                 <tr>
+                                    <th>ID</th>
                                     <th>User</th>
                                     <th>Role</th>
                                     <th>Screen</th>
@@ -63,8 +75,10 @@
                                 {
                                     <tr>
                                         <td>
+                                            <strong>@item.UserId</strong>
+                                        </td>
+                                        <td>
                                             <strong>@item.UserName</strong>
-                                            <br><small class="text-muted">ID: @item.UserId</small>
                                         </td>
                                         <td>
                                             <span class="badge badge-secondary">@item.RoleName</span>
@@ -74,7 +88,6 @@
                                             @if (!string.IsNullOrEmpty(item.URL))
                                             {
                                                 <br>
-
                                                 <small class="text-muted">@item.URL</small>
                                             }
                                         </td>
@@ -213,9 +226,9 @@
                 "lengthChange": true,
                 "autoWidth": false,
                 "pageLength": 25,
-                "order": [[0, "asc"]],
+                "order": [[1, "asc"]], // Changed from 0 to 1 since ID is now first column
                 "columnDefs": [
-                    { "orderable": false, "targets": 7 }
+                    { "orderable": false, "targets": 8 } // Changed from 7 to 8 since we added ID column
                 ]
             });
         });
@@ -245,4 +258,3 @@
         });
     </script>
 }
-
