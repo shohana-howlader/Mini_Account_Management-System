@@ -14,8 +14,7 @@ namespace Mini_Account_Management_System.Models
         [Display(Name = "Created Date")]
         public DateTime CreatedDate { get; set; }
 
-        // Navigation properties
-        public virtual ICollection<User> Users { get; set; } = new List<User>();
-        public virtual ICollection<UserRolePermission> UserRolePermissions { get; set; } = new List<UserRolePermission>();
+       
+       
     }
 }

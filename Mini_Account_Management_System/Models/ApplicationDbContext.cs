@@ -26,11 +26,11 @@ namespace Mini_Account_Management_System.Models
                 .HasForeignKey(urp => urp.UserId)
                 .OnDelete(DeleteBehavior.Restrict); // Prevent cascading delete issues
 
-            modelBuilder.Entity<UserRolePermission>()
-                .HasOne(urp => urp.Role)
-                .WithMany(r => r.UserRolePermissions)
-                .HasForeignKey(urp => urp.RoleId)
-                .OnDelete(DeleteBehavior.Cascade); // Allow cascade deletion
+            //modelBuilder.Entity<UserRolePermission>()
+            //    .HasOne(urp => urp.Role)
+            //    .WithMany(r => r.UserRolePermissions)
+            //    .HasForeignKey(urp => urp.RoleId)
+            //    .OnDelete(DeleteBehavior.Cascade); // Allow cascade deletion
 
             modelBuilder.Entity<UserRolePermission>()
                 .HasOne(urp => urp.Screen)

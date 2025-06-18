@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Data;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -9,106 +10,74 @@ namespace Mini_Account_Management_System.Controllers
     public class UsersController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly string _connectionString;
 
         public UsersController(ApplicationDbContext context)
         {
             _context = context;
+            _connectionString = _context.Database.GetConnectionString();
         }
 
-        // GET: Users
+        // GET: User
         public async Task<IActionResult> Index()
         {
-            //var users = await _context.Users
-            // .Include(u => u.Role)
-            // .ToListAsync();
-
-            var users = await _context.Users
-        .FromSqlRaw("EXEC sp_GetAllUsers_N")
-        .ToListAsync();
-
+            var users = await GetAllUsersAsync();
             return View(users);
         }
 
-        // GET: Users/Details/5
-        public async Task<IActionResult> Details(int? id)
+        // GET: User/Details/5
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var user = await _context.Users
-                .FirstOrDefaultAsync(m => m.Id == id);
-
+            var user = await GetUserByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
             }
-
             return View(user);
         }
 
-        // GET: Users/Create
+        // GET: User/Create
         public IActionResult Create()
         {
-            ViewData["RoleId"] = new SelectList(_context.Roles, "Id", "RoleName");
             return View();
         }
 
-        // POST: Users/Create using Stored Procedure
+        // POST: User/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UserName,Password,RoleId")] User user)
+        public async Task<IActionResult> Create(User user)
         {
             if (ModelState.IsValid)
             {
-                try
+                var createdUser = await InsertUserAsync(user);
+                if (createdUser != null)
                 {
-                    // Use stored procedure for insert
-                    var parameters = new[]
-                    {
-                        new SqlParameter("@UserName", user.UserName),
-                        new SqlParameter("@Password", user.Password), // Hash password in production
-                        new SqlParameter("@CreatedDate", DateTime.Now)
-                    };
-
-                    await _context.Database.ExecuteSqlRawAsync(
-                        "EXEC sp_InsertUser @UserName, @Password, @RoleId, @CreatedDate",
-                        parameters);
-
                     TempData["SuccessMessage"] = "User created successfully!";
                     return RedirectToAction(nameof(Index));
                 }
-                catch (Exception ex)
+                else
                 {
-                    ModelState.AddModelError("", "Error creating user: " + ex.Message);
+                    ModelState.AddModelError("", "Failed to create user.");
                 }
             }
-            ViewData["RoleId"] = new SelectList(_context.Roles, "Id");
             return View(user);
         }
 
-        // GET: Users/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        // GET: User/Edit/5
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var user = await _context.Users.FindAsync(id);
+            var user = await GetUserByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
             }
-            ViewData["RoleId"] = new SelectList(_context.Roles);
             return View(user);
         }
 
-        // POST: Users/Edit/5 using Stored Procedure
+        // POST: User/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,UserName,Password,RoleId,CreatedDate")] User user)
+        public async Task<IActionResult> Edit(int id, User user)
         {
             if (id != user.Id)
             {
@@ -117,77 +86,205 @@ namespace Mini_Account_Management_System.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                var updatedUser = await UpdateUserAsync(user);
+                if (updatedUser != null)
                 {
-                    // Use stored procedure for update
-                    var parameters = new[]
-                    {
-                        new SqlParameter("@Id", user.Id),
-                        new SqlParameter("@UserName", user.UserName),
-                        new SqlParameter("@Password", user.Password)
-                    };
-
-                    await _context.Database.ExecuteSqlRawAsync(
-                        "EXEC sp_UpdateUser @Id, @UserName, @Password, @RoleId",
-                        parameters);
-
                     TempData["SuccessMessage"] = "User updated successfully!";
                     return RedirectToAction(nameof(Index));
                 }
-                catch (Exception ex)
+                else
                 {
-                    ModelState.AddModelError("", "Error updating user: " + ex.Message);
+                    ModelState.AddModelError("", "User not found or failed to update.");
                 }
             }
-            ViewData["RoleId"] = new SelectList(_context.Roles, "Id");
             return View(user);
         }
 
-        // GET: Users/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        // GET: User/Delete/5
+        public async Task<IActionResult> Delete(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var user = await _context.Users
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var user = await GetUserByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
             }
-
             return View(user);
         }
 
-        // POST: Users/Delete/5 using Stored Procedure
+        // POST: User/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            try
+            var result = await DeleteUserAsync(id);
+            if (result > 0)
             {
-                // Use stored procedure for delete
-                var parameter = new SqlParameter("@Id", id);
-
-                await _context.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_DeleteUser @Id",
-                    parameter);
-
                 TempData["SuccessMessage"] = "User deleted successfully!";
             }
-            catch (Exception ex)
+            else
             {
-                TempData["ErrorMessage"] = "Error deleting user: " + ex.Message;
+                TempData["ErrorMessage"] = "User not found or failed to delete.";
             }
-
             return RedirectToAction(nameof(Index));
         }
 
-        private bool UserExists(int id)
+        // Private methods for stored procedure calls
+
+        private async Task<List<User>> GetAllUsersAsync()
         {
-            return _context.Users.Any(e => e.Id == id);
+            var users = new List<User>();
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                using (var command = new SqlCommand("sp_GetAllUsers", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    await connection.OpenAsync();
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            users.Add(new User
+                            {
+                                Id = reader.GetInt32("Id"),
+                                UserName = reader.GetString("UserName"),
+                                Password = reader.GetString("Password"),
+                                CreatedDate = reader.GetDateTime("CreatedDate")
+                            });
+                        }
+                    }
+                }
+            }
+
+            return users;
+        }
+
+        private async Task<User> GetUserByIdAsync(int id)
+        {
+            User user = null;
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                using (var command = new SqlCommand("sp_GetUserById", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@Id", id);
+
+                    await connection.OpenAsync();
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            user = new User
+                            {
+                                Id = reader.GetInt32("Id"),
+                                UserName = reader.GetString("UserName"),
+                                Password = reader.GetString("Password"),
+                                CreatedDate = reader.GetDateTime("CreatedDate")
+                            };
+                        }
+                    }
+                }
+            }
+
+            return user;
+        }
+
+        private async Task<User> InsertUserAsync(User user)
+        {
+            User createdUser = null;
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                using (var command = new SqlCommand("sp_InsertUser", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@UserName", user.UserName);
+                    command.Parameters.AddWithValue("@Password", user.Password);
+
+                    // CreatedDate parameter is optional in the stored procedure
+                    if (user.CreatedDate != default(DateTime))
+                    {
+                        command.Parameters.AddWithValue("@CreatedDate", user.CreatedDate);
+                    }
+
+                    await connection.OpenAsync();
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            createdUser = new User
+                            {
+                                Id = reader.GetInt32("Id"),
+                                UserName = reader.GetString("UserName"),
+                                Password = reader.GetString("Password"),
+                                CreatedDate = reader.GetDateTime("CreatedDate")
+                            };
+                        }
+                    }
+                }
+            }
+
+            return createdUser;
+        }
+
+        private async Task<User> UpdateUserAsync(User user)
+        {
+            User updatedUser = null;
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                using (var command = new SqlCommand("sp_UpdateUser", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@Id", user.Id);
+                    command.Parameters.AddWithValue("@UserName", user.UserName);
+                    command.Parameters.AddWithValue("@Password", user.Password);
+
+                    await connection.OpenAsync();
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            updatedUser = new User
+                            {
+                                Id = reader.GetInt32("Id"),
+                                UserName = reader.GetString("UserName"),
+                                Password = reader.GetString("Password"),
+                                CreatedDate = reader.GetDateTime("CreatedDate")
+                            };
+                        }
+                    }
+                }
+            }
+
+            return updatedUser;
+        }
+
+        private async Task<int> DeleteUserAsync(int id)
+        {
+            int rowsAffected = 0;
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                using (var command = new SqlCommand("sp_DeleteUser", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@Id", id);
+
+                    await connection.OpenAsync();
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            rowsAffected = reader.GetInt32("RowsAffected");
+                        }
+                    }
+                }
+            }
+
+            return rowsAffected;
         }
     }
 }

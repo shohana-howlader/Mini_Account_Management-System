@@ -140,17 +140,12 @@ namespace Mini_Account_Management_System.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
-
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
 
                     b.ToTable("Users");
                 });
@@ -195,21 +190,10 @@ namespace Mini_Account_Management_System.Migrations
                     b.ToTable("UserRolePermissions");
                 });
 
-            modelBuilder.Entity("Mini_Account_Management_System.Models.User", b =>
-                {
-                    b.HasOne("Mini_Account_Management_System.Models.Role", "Role")
-                        .WithMany("Users")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Role");
-                });
-
             modelBuilder.Entity("Mini_Account_Management_System.Models.UserRolePermission", b =>
                 {
                     b.HasOne("Mini_Account_Management_System.Models.Role", "Role")
-                        .WithMany("UserRolePermissions")
+                        .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -231,13 +215,6 @@ namespace Mini_Account_Management_System.Migrations
                     b.Navigation("Screen");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Mini_Account_Management_System.Models.Role", b =>
-                {
-                    b.Navigation("UserRolePermissions");
-
-                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Mini_Account_Management_System.Models.Screen", b =>
