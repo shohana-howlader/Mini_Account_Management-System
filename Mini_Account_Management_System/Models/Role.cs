@@ -11,6 +11,11 @@ namespace Mini_Account_Management_System.Models
         [Display(Name = "Role Name")]
         public string RoleName { get; set; }
 
+
+        [StringLength(255)]
+        [Display(Name = "Description")]
+        public string? Description { get; set; }
+
         [Display(Name = "Created Date")]
         public DateTime CreatedDate { get; set; }
 

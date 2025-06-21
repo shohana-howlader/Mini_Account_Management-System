@@ -12,7 +12,9 @@ namespace Mini_Account_Management_System.Models
         public DbSet<Role> Roles { get; set; }
         public DbSet<Screen> Screens { get; set; }
         public DbSet<UserRolePermission> UserRolePermissions { get; set; }
-      
+        public DbSet<UserRoleMapping> UserRoleMappings { get; set; }
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -1,0 +1,49 @@
+﻿@model IEnumerable<Mini_Account_Management_System.Models.ViewModel.UserRoleMappingViewModel>
+
+@{
+    ViewData["Title"] = "User Role Mappings";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>User Role Mappings</h2>
+        <a asp-action="Create" class="btn btn-success">+ Assign New Role</a>
+    </div>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>SL</th>
+                <th>User</th>
+                <th>Role</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                int sl = 1;
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@sl</td>
+                        <td>@item.UserName</td>
+                        <td>@item.RoleName</td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure to delete this mapping?');">Delete</a>
+                        </td>
+                    </tr>
+                    sl++;
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center">No user-role mappings found.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

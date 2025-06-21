@@ -12,7 +12,7 @@ using Mini_Account_Management_System.Models;
 namespace Mini_Account_Management_System.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250618093737_init")]
+    [Migration("20250619071110_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -35,6 +35,10 @@ namespace Mini_Account_Management_System.Migrations
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("RoleName")
                         .IsRequired()

@@ -1,7 +1,7 @@
 ﻿@model Mini_Account_Management_System.Models.Role
-
 @{
     ViewData["Title"] = "Edit Role";
+    string currentDate = ViewBag.CurrentDate?.ToString() ?? DateTime.Now.ToString("yyyy-MM-dd HH:mm");
 }
 
 <h2>Edit Role</h2>
@@ -15,18 +15,53 @@
         <span asp-validation-for="RoleName" class="text-danger"></span>
     </div>
 
-    <div class="form-group">
-        <label asp-for="CreatedDate" class="control-label"></label>
-        <input asp-for="CreatedDate" class="form-control" type="datetime-local" />
-        <span asp-validation-for="CreatedDate" class="text-danger"></span>
+    <div class="form-group mt-3">
+        <label asp-for="Description" class="control-label"></label>
+        <input asp-for="Description" class="form-control" />
+        <span asp-validation-for="Description" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    <div class="form-group mt-3">
+        <label asp-for="CreatedDate" class="control-label"></label>
+        <input asp-for="CreatedDate"
+               class="form-control"
+               type="datetime-local"
+               id="createdDateInput" />
+        <span asp-validation-for="CreatedDate" class="text-danger"></span>
+        <small class="form-text text-muted">
+            Only current date and time is allowed and cannot be changed
+        </small>
+
+    </div>
+
+    <div class="form-group mt-4">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Back to List</a>
+    </div>
 </form>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const input = document.getElementById('createdDateInput');
+            const now = new Date();
+
+            // Format current datetime to yyyy-MM-ddTHH:mm
+            const pad = (n) => n.toString().padStart(2, '0');
+            const formatted = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+            input.value = formatted;
+
+            // Prevent manual typing or changing the value
+            input.addEventListener('keydown', e => e.preventDefault());
+            input.addEventListener('mousedown', e => e.preventDefault());
+            input.addEventListener('change', () => {
+                input.value = formatted; // force reset
+            });
+        });
+    </script>
 }

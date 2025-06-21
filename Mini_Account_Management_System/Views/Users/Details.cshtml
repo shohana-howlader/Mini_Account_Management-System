@@ -11,11 +11,9 @@
                     <h4 class="card-title mb-0">User Details</h4>
                 </div>
                 <div class="card-body">
+
                     <dl class="row">
-                        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Id)</dt>
-                        <dd class="col-sm-9">
-                            <span class="badge bg-primary">@Html.DisplayFor(model => model.Id)</span>
-                        </dd>
+                       
 
                         <dt class="col-sm-3">@Html.DisplayNameFor(model => model.UserName)</dt>
                         <dd class="col-sm-9">@Html.DisplayFor(model => model.UserName)</dd>
@@ -39,7 +37,7 @@
 
                         <dt class="col-sm-3">@Html.DisplayNameFor(model => model.CreatedDate)</dt>
                         <dd class="col-sm-9">
-                            <i class="fas fa-calendar-alt text-muted me-2"></i>
+                           
                             @Html.DisplayFor(model => model.CreatedDate)
                         </dd>
                     </dl>
