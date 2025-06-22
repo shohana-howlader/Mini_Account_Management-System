@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Mini_Account_Management_System.Models.ViewModel;
 
 namespace Mini_Account_Management_System.Models
 {
@@ -14,13 +15,21 @@ namespace Mini_Account_Management_System.Models
         public DbSet<UserRolePermission> UserRolePermissions { get; set; }
         public DbSet<UserRoleMapping> UserRoleMappings { get; set; }
 
+        // ViewModel DbSets for stored procedures (keyless entities)
+        public DbSet<UserRoleMappingViewModel> UserRoleMappingViews { get; set; }
+        public DbSet<UserRolePermissionViewModel> UserRolePermission { get; set; }  // Add this line
+
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<UserRoleMappingViewModel>()
+                .HasNoKey()
+                .ToView(null); // Not mapped to any table/view
 
             // Account self-referencing relationship
-          
+
             // UserRolePermission relationships with delete behavior restrictions
             modelBuilder.Entity<UserRolePermission>()
                 .HasOne(urp => urp.User)
@@ -55,6 +64,31 @@ namespace Mini_Account_Management_System.Models
                 new Screen { Id = 5, ScreenName = "Chart of Accounts", URL = "/Accounts" },
                 new Screen { Id = 6, ScreenName = "User Management", URL = "/Users" }
             );
+
+
+            modelBuilder.Entity<UserRoleMapping>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.UserId).IsRequired();
+                entity.Property(e => e.RoleId).IsRequired();
+                
+
+                // Configure relationships
+                entity.HasOne<User>()
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne<Role>()
+                      .WithMany()
+                      .HasForeignKey(e => e.RoleId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // Ensure unique user-role combinations
+                entity.HasIndex(e => new { e.UserId, e.RoleId })
+                      .IsUnique()
+                      .HasDatabaseName("IX_UserRoleMapping_UserId_RoleId");
+            });
 
             base.OnModelCreating(modelBuilder);
         }

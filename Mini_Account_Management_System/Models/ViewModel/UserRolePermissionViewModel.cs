@@ -25,6 +25,8 @@
         public bool CanWrite { get; set; }
         public bool CanEdit { get; set; }
         public bool CanDelete { get; set; }
+
+        public List<UserRolePermissionViewModel> Permissions { get; set; }
     }
 
     public class EditUserRolePermissionViewModel
@@ -42,11 +44,5 @@
         public string ScreenName { get; set; }
     }
 
-    public class DashboardViewModel
-    {
-        public int TotalUsers { get; set; }
-        public int TotalRoles { get; set; }
-        public int TotalScreens { get; set; }
-        public int TotalPermissions { get; set; }
-    }
+  
 }
