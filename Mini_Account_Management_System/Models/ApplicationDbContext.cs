@@ -34,23 +34,23 @@ namespace Mini_Account_Management_System.Models
             // Account self-referencing relationship
 
             // UserRolePermission relationships with delete behavior restrictions
-            modelBuilder.Entity<UserRolePermission>()
-                .HasOne(urp => urp.User)
-                .WithMany()
-                .HasForeignKey(urp => urp.UserId)
-                .OnDelete(DeleteBehavior.Restrict); // Prevent cascading delete issues
+            //modelBuilder.Entity<UserRolePermission>()
+            //.HasOne(urp => urp.User)
+            //.WithMany()
+            //.HasForeignKey(urp => urp.UserId)
+            //.OnDelete(DeleteBehavior.Restrict); // Prevent cascading delete issues
 
             //modelBuilder.Entity<UserRolePermission>()
             //    .HasOne(urp => urp.Role)
-            //    .WithMany(r => r.UserRolePermissions)
+            //    .WithMany()
             //    .HasForeignKey(urp => urp.RoleId)
             //    .OnDelete(DeleteBehavior.Cascade); // Allow cascade deletion
 
-            modelBuilder.Entity<UserRolePermission>()
-                .HasOne(urp => urp.Screen)
-                .WithMany(s => s.UserRolePermissions)
-                .HasForeignKey(urp => urp.ScreenId)
-                .OnDelete(DeleteBehavior.Cascade); // Allow cascade deletion
+            //modelBuilder.Entity<UserRolePermission>()
+            //    .HasOne(urp => urp.Screen)
+            //    .WithMany(s => s.UserRolePermissions)
+            //    .HasForeignKey(urp => urp.ScreenId)
+            //    .OnDelete(DeleteBehavior.Cascade); // Allow cascade deletion
 
             // Seed data remains unchanged
             modelBuilder.Entity<Role>().HasData(

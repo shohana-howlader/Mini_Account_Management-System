@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Data;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Mini_Account_Management_System.Models;
-using System.Data;
-using System.Text.Json;
+using Mini_Account_Management_System.Models.ViewModel;
 
 namespace Mini_Account_Management_System.Controllers
 {
@@ -141,113 +142,70 @@ namespace Mini_Account_Management_System.Controllers
             }
         }
 
-        // POST: Save Permissions (Using Upsert for better performance)
-        [HttpPost]
-        public async Task<IActionResult> SavePermissions([FromBody] List<UserRolePermissionDto> permissions)
-        {
-            if (permissions == null || !permissions.Any())
-            {
-                return BadRequest(new { message = "No permissions provided" });
-            }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken] // Add this attribute
+        public async Task<IActionResult> SavePermissions([FromBody] CreateUserRolePermissionViewModel model)
+        {
             try
             {
-                var savedCount = 0;
-                var errorCount = 0;
-                var errors = new List<string>();
-
-                foreach (var p in permissions)
+                if (model == null)
                 {
-                    try
-                    {
-                        var parameters = new[]
-                        {
-                            new SqlParameter("@UserId", p.UserId ?? (object)DBNull.Value),
-                            new SqlParameter("@RoleId", p.RoleId ?? (object)DBNull.Value),
-                            new SqlParameter("@ScreenId", p.ScreenId),
-                            new SqlParameter("@CanRead", p.CanRead),
-                            new SqlParameter("@CanWrite", p.CanWrite),
-                            new SqlParameter("@CanEdit", p.CanEdit),
-                            new SqlParameter("@CanDelete", p.CanDelete)
-                        };
-
-                        // Use the upsert procedure for better performance
-                        await _context.Database.ExecuteSqlRawAsync(
-                            "EXEC sp_UpsertUserRolePermission @UserId, @RoleId, @ScreenId, @CanRead, @CanWrite, @CanEdit, @CanDelete",
-                            parameters);
-
-                        savedCount++;
-                    }
-                    catch (Exception ex)
-                    {
-                        errorCount++;
-                        errors.Add($"Screen {p.ScreenId}: {ex.Message}");
-                        _logger.LogError(ex, "Error saving permission for ScreenId: {ScreenId}", p.ScreenId);
-                    }
+                    _logger.LogWarning("SavePermissions called with null model");
+                    return BadRequest(new { message = "Request body is null" });
                 }
 
-                if (errorCount == 0)
-                {
-                    return Ok(new { message = $"All {savedCount} permissions saved successfully!" });
-                }
-                else if (savedCount > 0)
-                {
-                    return Ok(new
-                    {
-                        message = $"{savedCount} permissions saved, {errorCount} failed.",
-                        errors = errors
-                    });
-                }
-                else
-                {
-                    return StatusCode(500, new
-                    {
-                        message = "Failed to save permissions",
-                        errors = errors
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error saving permissions");
-                return StatusCode(500, new { message = "Error saving permissions: " + ex.Message });
-            }
-        }
+                _logger.LogInformation("SavePermissions called with UserId: {UserId}, RoleId: {RoleId}, Permissions count: {Count}",
+                    model.UserId, model.RoleId, model.Permissions?.Count ?? 0);
 
-        // POST: Bulk Save Permissions (Alternative approach using JSON)
-        [HttpPost]
-        public async Task<IActionResult> BulkSavePermissions([FromBody] BulkSaveRequest request)
-        {
-            if (request == null || request.Permissions == null || !request.Permissions.Any())
-            {
-                return BadRequest(new { message = "No permissions provided" });
-            }
+                // Check if both UserId and RoleId are null/0
+                if ((!model.UserId.HasValue || model.UserId == 0) && (!model.RoleId.HasValue || model.RoleId == 0))
+                {
+                    return BadRequest(new { message = "Either UserId or RoleId must be provided and greater than 0." });
+                }
 
-            try
-            {
-                var permissionsJson = JsonSerializer.Serialize(request.Permissions);
+                if (model.Permissions == null || !model.Permissions.Any())
+                {
+                    return BadRequest(new { message = "Permissions are required." });
+                }
+
+                // Convert UserId and RoleId to proper values for database
+                var userIdParam = model.UserId.HasValue && model.UserId > 0 ? model.UserId.Value : (object)DBNull.Value;
+                var roleIdParam = model.RoleId.HasValue && model.RoleId > 0 ? model.RoleId.Value : (object)DBNull.Value;
+
+                var permissionJson = JsonSerializer.Serialize(model.Permissions);
+                _logger.LogInformation("Serialized permissions JSON: {Json}", permissionJson);
 
                 var parameters = new[]
                 {
-                    new SqlParameter("@UserId", request.UserId ?? (object)DBNull.Value),
-                    new SqlParameter("@RoleId", request.RoleId ?? (object)DBNull.Value),
-                    new SqlParameter("@PermissionsJson", permissionsJson)
-                };
+            new SqlParameter("@UserId", userIdParam),
+            new SqlParameter("@RoleId", roleIdParam),
+            new SqlParameter("@Permissionjson", permissionJson)
+        };
 
-                await _context.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_BulkUpdateUserRolePermissions @UserId, @RoleId, @PermissionsJson",
-                    parameters);
+                var result = await _context.Database.ExecuteSqlRawAsync(
+                    "EXEC sp_InsertMultipleUserRolePermissions @UserId, @RoleId, @Permissionjson",
+                    parameters
+                );
 
-                return Ok(new { message = "Permissions saved successfully!" });
+                _logger.LogInformation("Stored procedure executed successfully. Result: {Result}", result);
+
+                return Ok(new { message = "Permissions saved successfully" });
+            }
+            catch (SqlException sqlEx)
+            {
+                _logger.LogError(sqlEx, "SQL error occurred while saving permissions");
+                return StatusCode(500, new { message = "Database error occurred while saving permissions", error = sqlEx.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error bulk saving permissions");
-                return StatusCode(500, new { message = "Error saving permissions: " + ex.Message });
+                _logger.LogError(ex, "Error occurred while saving permissions");
+                return StatusCode(500, new { message = "An error occurred while saving permissions", error = ex.Message });
             }
         }
 
-        // DELETE: Remove Permissions
+
+
         [HttpPost]
         public async Task<IActionResult> DeletePermissions([FromBody] DeletePermissionsRequest request)
         {
@@ -381,23 +339,9 @@ namespace Mini_Account_Management_System.Controllers
         public int? RoleId { get; set; }
     }
 
-    public class UserRolePermissionDto
-    {
-        public int? UserId { get; set; }
-        public int? RoleId { get; set; }
-        public int ScreenId { get; set; }
-        public bool CanRead { get; set; }
-        public bool CanWrite { get; set; }
-        public bool CanEdit { get; set; }
-        public bool CanDelete { get; set; }
-    }
+   
 
-    public class BulkSaveRequest
-    {
-        public int? UserId { get; set; }
-        public int? RoleId { get; set; }
-        public List<UserRolePermissionDto> Permissions { get; set; }
-    }
+    
 
     public class DeletePermissionsRequest
     {

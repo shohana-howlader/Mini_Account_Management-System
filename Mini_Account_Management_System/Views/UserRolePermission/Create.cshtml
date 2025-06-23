@@ -144,16 +144,7 @@
 
                         <!-- Action Buttons -->
                         <div class="d-flex justify-content-between mt-4">
-                            <div>
-                                <button type="button" class="btn btn-secondary me-2" onclick="goBack()">
-                                    <i class="fas fa-arrow-left me-2"></i>
-                                    Back to List
-                                </button>
-                                <button type="button" class="btn btn-warning" onclick="clearCurrentPermissions()">
-                                    <i class="fas fa-trash-alt me-2"></i>
-                                    Clear Existing
-                                </button>
-                            </div>
+                           
                             <button type="button" class="btn btn-primary" onclick="savePermissions()">
                                 <i class="fas fa-save me-2"></i>
                                 Save Permissions
@@ -169,90 +160,6 @@
 <!-- Anti-forgery token for AJAX requests -->
 @Html.AntiForgeryToken()
 
-<style>
-    .card-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-    }
-
-    .permission-table {
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-
-    .table th {
-        background-color: #f8f9fa;
-        border-bottom: 2px solid #dee2e6;
-        font-weight: 600;
-    }
-
-    .form-select:focus, .form-control:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-    }
-
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-
-    .btn-secondary {
-        background: #6c757d;
-        border: none;
-    }
-
-    .loading-spinner {
-        display: none;
-    }
-
-    .checkbox-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .form-check-input:checked {
-        background-color: #667eea;
-        border-color: #667eea;
-    }
-
-    .alert {
-        border-radius: 10px;
-        margin-bottom: 20px;
-    }
-
-    .table tbody tr:hover {
-        background-color: #f8f9fa;
-    }
-
-    .btn-outline-primary:hover {
-        background-color: #667eea;
-        border-color: #667eea;
-    }
-
-    .btn-warning {
-        background-color: #f0ad4e;
-        border-color: #eea236;
-        color: white;
-    }
-
-        .btn-warning:hover {
-            background-color: #ec971f;
-            border-color: #d58512;
-            color: white;
-        }
-
-    .alert-dismissible .btn-close {
-        padding: 0.75rem 1rem;
-    }
-</style>
 
 <script>
     // Global variables
@@ -332,6 +239,12 @@
     }
 
     // Load permissions based on user/role selection
+
+
+
+
+
+
     async function loadPermissions() {
         const userId = document.getElementById('userSelect').value;
         const roleId = document.getElementById('roleSelect').value;
@@ -467,122 +380,85 @@
         });
     }
 
-    // Save permissions
-    async function savePermissions() {
-        const userId = document.getElementById('userSelect').value;
-        const roleId = document.getElementById('roleSelect').value;
 
-        if (!userId && !roleId) {
-            showAlert('Please select either a user or role', 'warning');
-            return;
-        }
+ // Fixed savePermissions function
+async function savePermissions() {
+    const userIdValue = document.getElementById('userSelect').value;
+    const roleIdValue = document.getElementById('roleSelect').value;
 
-        // Collect all permissions
-        const permissions = [];
-        const rows = document.querySelectorAll('#permissionsTableBody tr[data-screen-id]');
+    // Convert to integers or null, not empty strings
+    const userId = userIdValue ? parseInt(userIdValue) : null;
+    const roleId = roleIdValue ? parseInt(roleIdValue) : null;
 
-        rows.forEach(row => {
-            const screenId = parseInt(row.getAttribute('data-screen-id'));
-            const canRead = row.querySelector('[data-permission="read"]').checked;
-            const canWrite = row.querySelector('[data-permission="write"]').checked;
-            const canEdit = row.querySelector('[data-permission="edit"]').checked;
-            const canDelete = row.querySelector('[data-permission="delete"]').checked;
+    if (userId == null && roleId == null) {
+        showAlert('Please select either a user or role', 'warning');
+        return;
+    }
 
-            // Only add permissions that have at least one permission checked
-            if (canRead || canWrite || canEdit || canDelete) {
-                permissions.push({
-                    userId: userId ? parseInt(userId) : null,
-                    roleId: roleId ? parseInt(roleId) : null,
-                    screenId: screenId,
-                    canRead: canRead,
-                    canWrite: canWrite,
-                    canEdit: canEdit,
-                    canDelete: canDelete
-                });
-            }
+    const permissions = [];
+    const rows = document.querySelectorAll('#permissionsTableBody tr[data-screen-id]');
+
+    rows.forEach(row => {
+        const screenId = parseInt(row.getAttribute('data-screen-id'));
+        const canRead = row.querySelector('[data-permission="read"]').checked;
+        const canWrite = row.querySelector('[data-permission="write"]').checked;
+        const canEdit = row.querySelector('[data-permission="edit"]').checked;
+        const canDelete = row.querySelector('[data-permission="delete"]').checked;
+
+        // Always add the permission entry (even if all false)
+        permissions.push({
+            screenId,
+            canRead,
+            canWrite,
+            canEdit,
+            canDelete
+        });
+    });
+
+    if (permissions.length === 0) {
+        showAlert('No permissions found to save', 'warning');
+        return;
+    }
+
+    const payload = {
+        userId: userId,
+        roleId: roleId,
+        permissions: permissions
+    };
+
+    console.log('Sending payload:', JSON.stringify(payload, null, 2)); // Debug log
+
+    try {
+        const response = await fetch('@Url.Action("SavePermissions", "UserRolePermission")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: JSON.stringify(payload)
         });
 
-        if (permissions.length === 0) {
-            showAlert('No permissions selected to save', 'warning');
-            return;
-        }
-
-        try {
-            const response = await fetch('@Url.Action("SavePermissions", "UserRolePermission")', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
-                },
-                body: JSON.stringify(permissions)
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                showAlert(result.message, 'success');
-                // Optionally reload permissions to show updated state
-                loadPermissions();
-            } else {
-                showAlert(result.message || 'Error saving permissions', 'danger');
-                if (result.errors && result.errors.length > 0) {
-                    result.errors.forEach(error => {
-                        console.error('Permission error:', error);
-                    });
-                }
+        const result = await response.json();
+        debugger    ;
+        if (response.ok) {
+            showAlert( 'Permissions saved successfully', 'success');
+            loadPermissions(); // Reload to show updated permissions
+        } else {
+            showAlert(result.message || 'Error saving permissions', 'danger');
+            if (result.errors?.length) {
+                result.errors.forEach(error => console.error('Permission error:', error));
             }
-        } catch (error) {
-            console.error('Error saving permissions:', error);
-            showAlert('Error saving permissions: ' + error.message, 'danger');
         }
+    } catch (error) {
+        console.error('Error saving permissions:', error);
+        showAlert('Error saving permissions: ' + error.message, 'danger');
     }
+}
 
-    // Clear current permissions
-    async function clearCurrentPermissions() {
-        const userId = document.getElementById('userSelect').value;
-        const roleId = document.getElementById('roleSelect').value;
 
-        if (!userId && !roleId) {
-            showAlert('Please select either a user or role', 'warning');
-            return;
-        }
 
-        if (!confirm('Are you sure you want to clear all existing permissions for this user/role?')) {
-            return;
-        }
+   
 
-        try {
-            const response = await fetch('@Url.Action("ClearPermissions", "UserRolePermission")', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
-                },
-                body: JSON.stringify({
-                    userId: userId ? parseInt(userId) : null,
-                    roleId: roleId ? parseInt(roleId) : null
-                })
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                showAlert(result.message, 'success');
-                // Clear the UI checkboxes
-                clearAllPermissions();
-            } else {
-                showAlert(result.message || 'Error clearing permissions', 'danger');
-            }
-        } catch (error) {
-            console.error('Error clearing permissions:', error);
-            showAlert('Error clearing permissions: ' + error.message, 'danger');
-        }
-    }
-
-    // Go back to list
-    function goBack() {
-        window.location.href = '@Url.Action("Index", "UserRolePermission")';
-    }
 
     // Show alert message
     function showAlert(message, type) {
