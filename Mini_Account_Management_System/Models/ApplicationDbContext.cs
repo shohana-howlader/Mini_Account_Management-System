@@ -24,6 +24,9 @@ namespace Mini_Account_Management_System.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            modelBuilder.Entity<UserRolePermissionViewModel>().HasNoKey();
+
             modelBuilder.Entity<UserRoleMappingViewModel>()
                 .HasNoKey()
                 .ToView(null); // Not mapped to any table/view

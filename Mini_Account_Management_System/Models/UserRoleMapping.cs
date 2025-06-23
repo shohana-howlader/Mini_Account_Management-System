@@ -5,7 +5,7 @@ namespace Mini_Account_Management_System.Models
 {
     public class UserRoleMapping
     {
-        public int Id { get; set; }
+        public int ? Id { get; set; }
 
         [Required]
         public int UserId { get; set; }

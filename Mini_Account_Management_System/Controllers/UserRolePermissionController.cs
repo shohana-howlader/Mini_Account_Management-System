@@ -2,621 +2,413 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Mini_Account_Management_System.Models;
-using Mini_Account_Management_System.Models.ViewModel;
 using System.Data;
+using System.Text.Json;
 
 namespace Mini_Account_Management_System.Controllers
 {
     public class UserRolePermissionController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<UserRolePermissionController> _logger;
 
-        public UserRolePermissionController(ApplicationDbContext context)
+        public UserRolePermissionController(ApplicationDbContext context, ILogger<UserRolePermissionController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
-        // GET: UserRolePermission
-        public async Task<IActionResult> Index()
+        // GET: Create View
+        public async Task<IActionResult> Create()
         {
-            var permissions = new List<UserRolePermissionViewModel>();
-
             try
             {
+                ViewBag.Users = await _context.Users.OrderBy(u => u.UserName).ToListAsync();
+                ViewBag.Roles = await _context.Roles.OrderBy(r => r.RoleName).ToListAsync();
+                ViewBag.Screens = await _context.Screens.OrderBy(s => s.ScreenName).ToListAsync();
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading Create view");
+                ViewBag.ErrorMessage = "Error loading data. Please try again.";
+                return View();
+            }
+        }
+
+        // GET: Index/List View
+        public async Task<IActionResult> Index()
+        {
+            try
+            {
+                var permissions = await _context.UserRolePermissions
+                    .Include(p => p.User)
+                    .Include(p => p.Role)
+                    .Include(p => p.Screen)
+                    .OrderBy(p => p.User.UserName)
+                    .ThenBy(p => p.Role.RoleName)
+                    .ThenBy(p => p.Screen.ScreenName)
+                    .ToListAsync();
+
+                return View(permissions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading permissions list");
+                ViewBag.ErrorMessage = "Error loading permissions. Please try again.";
+                return View(new List<UserRolePermission>());
+            }
+        }
+
+        // POST: Get Existing Permissions
+        [HttpPost]
+        public async Task<IActionResult> GetPermissions([FromBody] GetPermissionsRequest request)
+        {
+            try
+            {
+                if (request == null || (request.UserId == null && request.RoleId == null))
+                {
+                    return BadRequest(new { message = "Either UserId or RoleId must be provided" });
+                }
+
+                var parameters = new[]
+                {
+                    new SqlParameter("@UserId", request.UserId ?? (object)DBNull.Value),
+                    new SqlParameter("@RoleId", request.RoleId ?? (object)DBNull.Value)
+                };
+
+                // Use stored procedure to get permissions with joins
+                var query = @"
+                    DECLARE @temp TABLE (
+                        Id INT,
+                        UserId INT,
+                        UserName NVARCHAR(255),
+                        RoleId INT,
+                        RoleName NVARCHAR(255),
+                        ScreenId INT,
+                        ScreenName NVARCHAR(255),
+                        CanRead BIT,
+                        CanWrite BIT,
+                        CanEdit BIT,
+                        CanDelete BIT
+                    );
+                    
+                    INSERT INTO @temp
+                    EXEC sp_GetUserRolePermissions @UserId, @RoleId;
+                    
+                    SELECT * FROM @temp;
+                ";
+
+                var permissionsData = new List<dynamic>();
+
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
-                    command.CommandText = "sp_GetAllUserRolePermissions";
-                    command.CommandType = CommandType.StoredProcedure;
+                    command.CommandText = query;
+                    command.Parameters.Add(new SqlParameter("@UserId", request.UserId ?? (object)DBNull.Value));
+                    command.Parameters.Add(new SqlParameter("@RoleId", request.RoleId ?? (object)DBNull.Value));
 
                     await _context.Database.OpenConnectionAsync();
+
                     using (var reader = await command.ExecuteReaderAsync())
                     {
                         while (await reader.ReadAsync())
                         {
-                            permissions.Add(new UserRolePermissionViewModel
+                            permissionsData.Add(new
                             {
-                                Id = reader.GetInt32("Id"),
-                                UserId = reader.GetInt32("UserId"),
-                                RoleId = reader.GetInt32("RoleId"),
-                                ScreenId = reader.GetInt32("ScreenId"),
-                                CanRead = reader.GetBoolean("CanRead"),
-                                CanWrite = reader.GetBoolean("CanWrite"),
-                                CanEdit = reader.GetBoolean("CanEdit"),
-                                CanDelete = reader.GetBoolean("CanDelete"),
-                                UserName = reader.GetString("UserName"),
-                                RoleName = reader.GetString("RoleName"),
-                                ScreenName = reader.GetString("ScreenName"),
-                                URL = reader.IsDBNull("URL") ? "" : reader.GetString("URL")
+                                id = reader.GetInt32("Id"),
+                                userId = reader.IsDBNull("UserId") ? (int?)null : reader.GetInt32("UserId"),
+                                userName = reader.IsDBNull("UserName") ? "" : reader.GetString("UserName"),
+                                roleId = reader.IsDBNull("RoleId") ? (int?)null : reader.GetInt32("RoleId"),
+                                roleName = reader.IsDBNull("RoleName") ? "" : reader.GetString("RoleName"),
+                                screenId = reader.GetInt32("ScreenId"),
+                                screenName = reader.IsDBNull("ScreenName") ? "" : reader.GetString("ScreenName"),
+                                canRead = reader.GetBoolean("CanRead"),
+                                canWrite = reader.GetBoolean("CanWrite"),
+                                canEdit = reader.GetBoolean("CanEdit"),
+                                canDelete = reader.GetBoolean("CanDelete")
                             });
                         }
                     }
                 }
+
+                return Json(permissionsData);
             }
             catch (Exception ex)
             {
-                // Log the exception
-                TempData["Error"] = $"Error loading permissions: {ex.Message}";
-                return View(new List<UserRolePermissionViewModel>());
+                _logger.LogError(ex, "Error getting permissions for UserId: {UserId}, RoleId: {RoleId}",
+                    request?.UserId, request?.RoleId);
+                return StatusCode(500, new { message = "Error loading permissions: " + ex.Message });
             }
-            finally
-            {
-                if (_context.Database.GetDbConnection().State == ConnectionState.Open)
-                {
-                    await _context.Database.CloseConnectionAsync();
-                }
-            }
-
-            return View(permissions);
         }
 
-        // GET: UserRolePermission/Details/5
-        public async Task<IActionResult> Details(int id)
-        {
-            var permission = await GetPermissionById(id);
-            if (permission == null)
-            {
-                return NotFound();
-            }
-            return View(permission);
-        }
-
-        // GET: UserRolePermission/Create
-        public async Task<IActionResult> Create()
-        {
-            await PopulateDropDowns();
-
-            var screens = await _context.Screens.ToListAsync();
-
-            var model = new CreateUserRolePermissionViewModel
-            {
-                UserId = 0,
-                RoleId = 0,
-                Permissions = screens.Select(s => new UserRolePermissionViewModel
-                {
-                    ScreenId = s.Id,
-                    ScreenName = s.ScreenName,
-                    CanRead = false,
-                    CanWrite = false,
-                    CanEdit = false,
-                    CanDelete = false
-                }).ToList()
-            };
-
-            return View(model);
-        }
-
+        // POST: Save Permissions (Using Upsert for better performance)
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CreateUserRolePermissionViewModel model)
+        public async Task<IActionResult> SavePermissions([FromBody] List<UserRolePermissionDto> permissions)
         {
-            var logMessages = new List<string>();
-            logMessages.Add($"=== CREATE ACTION STARTED ===");
-            logMessages.Add($"UserId: {model.UserId}");
-            logMessages.Add($"RoleId: {model.RoleId}");
-            logMessages.Add($"Permissions Count: {model.Permissions?.Count ?? 0}");
-
-            if (model.Permissions != null)
+            if (permissions == null || !permissions.Any())
             {
-                for (int i = 0; i < model.Permissions.Count; i++)
-                {
-                    var perm = model.Permissions[i];
-                    logMessages.Add($"Permission[{i}] - ScreenId: {perm.ScreenId}, ScreenName: '{perm.ScreenName}', " +
-                                  $"Read: {perm.CanRead}, Write: {perm.CanWrite}, Edit: {perm.CanEdit}, Delete: {perm.CanDelete}");
-                }
-            }
-            else
-            {
-                logMessages.Add("WARNING: model.Permissions is NULL!");
-            }
-
-            foreach (var msg in logMessages)
-            {
-                System.Diagnostics.Debug.WriteLine(msg);
-                Console.WriteLine(msg);
-            }
-
-            if (!ModelState.IsValid)
-            {
-                logMessages.Add("=== MODEL STATE INVALID ===");
-                foreach (var error in ModelState)
-                {
-                    logMessages.Add($"Key: {error.Key}, Errors: {string.Join(", ", error.Value.Errors.Select(e => e.ErrorMessage))}");
-                }
-
-                foreach (var msg in logMessages)
-                {
-                    System.Diagnostics.Debug.WriteLine(msg);
-                    Console.WriteLine(msg);
-                }
-
-                await PopulateDropDowns();
-                await RepopulatePermissions(model);
-                return View(model);
-            }
-
-            if (model.Permissions == null || !model.Permissions.Any())
-            {
-                logMessages.Add("ERROR: No permissions data received!");
-                TempData["Error"] = "No permissions data received. Please try again.";
-                await PopulateDropDowns();
-                await RepopulatePermissions(model);
-                return View(model);
+                return BadRequest(new { message = "No permissions provided" });
             }
 
             try
             {
-                // Filter permissions that have at least one permission granted
-                var validPermissions = model.Permissions
-                    .Where(p => p.CanRead || p.CanWrite || p.CanEdit || p.CanDelete)
-                    .ToList();
+                var savedCount = 0;
+                var errorCount = 0;
+                var errors = new List<string>();
 
-                if (!validPermissions.Any())
+                foreach (var p in permissions)
                 {
-                    TempData["Warning"] = "No permissions were selected to save.";
-                    await PopulateDropDowns();
-                    await RepopulatePermissions(model);
-                    return View(model);
-                }
-
-                logMessages.Add($"Processing {validPermissions.Count} valid permissions");
-
-                // Create DataTable for Table-Valued Parameter
-                var permissionsTable = new DataTable();
-                permissionsTable.Columns.Add("ScreenId", typeof(int));
-                permissionsTable.Columns.Add("CanRead", typeof(bool));
-                permissionsTable.Columns.Add("CanWrite", typeof(bool));
-                permissionsTable.Columns.Add("CanEdit", typeof(bool));
-                permissionsTable.Columns.Add("CanDelete", typeof(bool));
-
-                foreach (var permission in validPermissions)
-                {
-                    permissionsTable.Rows.Add(
-                        permission.ScreenId,
-                        permission.CanRead,
-                        permission.CanWrite,
-                        permission.CanEdit,
-                        permission.CanDelete
-                    );
-                }
-
-                logMessages.Add($"DataTable created with {permissionsTable.Rows.Count} rows");
-
-                // Call the stored procedure with Table-Valued Parameter
-                var results = new List<dynamic>();
-                using (var connection = _context.Database.GetDbConnection())
-                {
-                    await connection.OpenAsync();
-                    using (var command = connection.CreateCommand())
+                    try
                     {
-                        command.CommandText = "sp_InsertUserRolePermission_TVP";
-                        command.CommandType = CommandType.StoredProcedure;
-
-                        // Add parameters
-                        var userIdParam = new SqlParameter("@UserId", SqlDbType.Int) { Value = model.UserId };
-                        var roleIdParam = new SqlParameter("@RoleId", SqlDbType.Int) { Value = model.RoleId };
-                        var permissionsParam = new SqlParameter("@Permissions", SqlDbType.Structured)
+                        var parameters = new[]
                         {
-                            TypeName = "UserRolePermissionTableType",
-                            Value = permissionsTable
+                            new SqlParameter("@UserId", p.UserId ?? (object)DBNull.Value),
+                            new SqlParameter("@RoleId", p.RoleId ?? (object)DBNull.Value),
+                            new SqlParameter("@ScreenId", p.ScreenId),
+                            new SqlParameter("@CanRead", p.CanRead),
+                            new SqlParameter("@CanWrite", p.CanWrite),
+                            new SqlParameter("@CanEdit", p.CanEdit),
+                            new SqlParameter("@CanDelete", p.CanDelete)
                         };
 
-                        command.Parameters.Add(userIdParam);
-                        command.Parameters.Add(roleIdParam);
-                        command.Parameters.Add(permissionsParam);
+                        // Use the upsert procedure for better performance
+                        await _context.Database.ExecuteSqlRawAsync(
+                            "EXEC sp_UpsertUserRolePermission @UserId, @RoleId, @ScreenId, @CanRead, @CanWrite, @CanEdit, @CanDelete",
+                            parameters);
 
-                        logMessages.Add("Executing stored procedure with Table-Valued Parameter");
-
-                        using (var reader = await command.ExecuteReaderAsync())
-                        {
-                            while (await reader.ReadAsync())
-                            {
-                                results.Add(new
-                                {
-                                    ScreenId = reader.GetInt32("ScreenId"),
-                                    Action = reader.GetString("Action"),
-                                    PermissionId = reader.GetInt32("PermissionId")
-                                });
-                            }
-                        }
+                        savedCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        errorCount++;
+                        errors.Add($"Screen {p.ScreenId}: {ex.Message}");
+                        _logger.LogError(ex, "Error saving permission for ScreenId: {ScreenId}", p.ScreenId);
                     }
                 }
 
-                // Process results
-                var insertedCount = results.Count(r => r.Action == "Inserted");
-                var updatedCount = results.Count(r => r.Action == "Updated");
-                var totalProcessed = results.Count;
-
-                logMessages.Add($"=== PROCESSING COMPLETE ===");
-                logMessages.Add($"Total Processed: {totalProcessed}");
-                logMessages.Add($"Inserted: {insertedCount}");
-                logMessages.Add($"Updated: {updatedCount}");
-
-                foreach (var msg in logMessages)
+                if (errorCount == 0)
                 {
-                    System.Diagnostics.Debug.WriteLine(msg);
-                    Console.WriteLine(msg);
+                    return Ok(new { message = $"All {savedCount} permissions saved successfully!" });
                 }
-
-                if (totalProcessed > 0)
+                else if (savedCount > 0)
                 {
-                    var message = $"Successfully processed {totalProcessed} permissions! ";
-                    if (insertedCount > 0 && updatedCount > 0)
+                    return Ok(new
                     {
-                        message += $"({insertedCount} new, {updatedCount} updated)";
-                    }
-                    else if (insertedCount > 0)
-                    {
-                        message += $"({insertedCount} new permissions created)";
-                    }
-                    else if (updatedCount > 0)
-                    {
-                        message += $"({updatedCount} permissions updated)";
-                    }
-
-                    TempData["Success"] = message;
-                    return RedirectToAction(nameof(Index));
+                        message = $"{savedCount} permissions saved, {errorCount} failed.",
+                        errors = errors
+                    });
                 }
                 else
                 {
-                    TempData["Warning"] = "No permissions were processed.";
-                }
-            }
-            catch (Exception ex)
-            {
-                var errorMsg = $"Error processing permissions: {ex.Message}";
-                if (ex.InnerException != null)
-                {
-                    errorMsg += $" Inner Exception: {ex.InnerException.Message}";
-                }
-
-                logMessages.Add($"CRITICAL ERROR: {errorMsg}");
-                logMessages.Add($"Stack Trace: {ex.StackTrace}");
-
-                foreach (var msg in logMessages)
-                {
-                    System.Diagnostics.Debug.WriteLine(msg);
-                    Console.WriteLine(msg);
-                }
-
-                TempData["Error"] = errorMsg;
-            }
-
-            // If we reach here, something went wrong
-            await PopulateDropDowns();
-            await RepopulatePermissions(model);
-            return View(model);
-        }
-
-        // Helper method to repopulate permissions
-        private async Task RepopulatePermissions(CreateUserRolePermissionViewModel model)
-        {
-            var allScreens = await _context.Screens.ToListAsync();
-            model.Permissions = allScreens.Select(s => new UserRolePermissionViewModel
-            {
-                ScreenId = s.Id,
-                ScreenName = s.ScreenName,
-                CanRead = model.Permissions?.FirstOrDefault(p => p.ScreenId == s.Id)?.CanRead ?? false,
-                CanWrite = model.Permissions?.FirstOrDefault(p => p.ScreenId == s.Id)?.CanWrite ?? false,
-                CanEdit = model.Permissions?.FirstOrDefault(p => p.ScreenId == s.Id)?.CanEdit ?? false,
-                CanDelete = model.Permissions?.FirstOrDefault(p => p.ScreenId == s.Id)?.CanDelete ?? false
-            }).ToList();
-        }
-
-        // GET: UserRolePermission/Edit/5
-        public async Task<IActionResult> Edit(int id)
-        {
-            var permission = await GetPermissionById(id);
-            if (permission == null)
-            {
-                return NotFound();
-            }
-
-            var editModel = new EditUserRolePermissionViewModel
-            {
-                Id = permission.Id,
-                UserId = permission.UserId,
-                RoleId = permission.RoleId,
-                ScreenId = permission.ScreenId,
-                CanRead = permission.CanRead,
-                CanWrite = permission.CanWrite,
-                CanEdit = permission.CanEdit,
-                CanDelete = permission.CanDelete,
-                UserName = permission.UserName,
-                RoleName = permission.RoleName,
-                ScreenName = permission.ScreenName
-            };
-
-            return View(editModel);
-        }
-
-        // POST: UserRolePermission/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, EditUserRolePermissionViewModel model)
-        {
-            if (id != model.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    var parameters = new[]
+                    return StatusCode(500, new
                     {
-                        new SqlParameter("@Id", model.Id),
-                        new SqlParameter("@CanRead", model.CanRead),
-                        new SqlParameter("@CanWrite", model.CanWrite),
-                        new SqlParameter("@CanEdit", model.CanEdit),
-                        new SqlParameter("@CanDelete", model.CanDelete)
-                    };
-
-                    await _context.Database.ExecuteSqlRawAsync(
-                        "EXEC sp_UpdateUserRolePermission @Id, @CanRead, @CanWrite, @CanEdit, @CanDelete",
-                        parameters);
-
-                    TempData["Success"] = "User role permission updated successfully!";
-                    return RedirectToAction(nameof(Index));
+                        message = "Failed to save permissions",
+                        errors = errors
+                    });
                 }
-                catch (Exception ex)
-                {
-                    TempData["Error"] = $"Error updating permission: {ex.Message}";
-                }
-            }
-
-            return View(model);
-        }
-
-
-
-
-        // POST: UserRolePermission/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete([FromForm] int id)
-
-        {
-            try
-            {
-                var parameter = new SqlParameter("@Id", id);
-                await _context.Database.ExecuteSqlRawAsync("EXEC sp_DeleteUserRolePermission @Id", parameter);
-
-                TempData["Success"] = "User role permission deleted successfully!";
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"Error deleting permission: {ex.Message}";
+                _logger.LogError(ex, "Error saving permissions");
+                return StatusCode(500, new { message = "Error saving permissions: " + ex.Message });
             }
-
-            return RedirectToAction(nameof(Index));
         }
 
-
-        // GET: UserRolePermission/UserPermissions/5
-        public async Task<IActionResult> UserPermissions(int userId)
+        // POST: Bulk Save Permissions (Alternative approach using JSON)
+        [HttpPost]
+        public async Task<IActionResult> BulkSavePermissions([FromBody] BulkSaveRequest request)
         {
-            var permissions = new List<UserRolePermissionViewModel>();
+            if (request == null || request.Permissions == null || !request.Permissions.Any())
+            {
+                return BadRequest(new { message = "No permissions provided" });
+            }
 
             try
             {
+                var permissionsJson = JsonSerializer.Serialize(request.Permissions);
+
+                var parameters = new[]
+                {
+                    new SqlParameter("@UserId", request.UserId ?? (object)DBNull.Value),
+                    new SqlParameter("@RoleId", request.RoleId ?? (object)DBNull.Value),
+                    new SqlParameter("@PermissionsJson", permissionsJson)
+                };
+
+                await _context.Database.ExecuteSqlRawAsync(
+                    "EXEC sp_BulkUpdateUserRolePermissions @UserId, @RoleId, @PermissionsJson",
+                    parameters);
+
+                return Ok(new { message = "Permissions saved successfully!" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error bulk saving permissions");
+                return StatusCode(500, new { message = "Error saving permissions: " + ex.Message });
+            }
+        }
+
+        // DELETE: Remove Permissions
+        [HttpPost]
+        public async Task<IActionResult> DeletePermissions([FromBody] DeletePermissionsRequest request)
+        {
+            try
+            {
+                var parameters = new[]
+                {
+                    new SqlParameter("@UserId", request.UserId ?? (object)DBNull.Value),
+                    new SqlParameter("@RoleId", request.RoleId ?? (object)DBNull.Value),
+                    new SqlParameter("@ScreenId", request.ScreenId ?? (object)DBNull.Value)
+                };
+
+                var result = new List<dynamic>();
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
-                    command.CommandText = "sp_GetUserPermissions";
-                    command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.Add(new SqlParameter("@UserId", userId));
+                    command.CommandText = "EXEC sp_DeleteUserRolePermissions @UserId, @RoleId, @ScreenId";
+                    command.Parameters.Add(new SqlParameter("@UserId", request.UserId ?? (object)DBNull.Value));
+                    command.Parameters.Add(new SqlParameter("@RoleId", request.RoleId ?? (object)DBNull.Value));
+                    command.Parameters.Add(new SqlParameter("@ScreenId", request.ScreenId ?? (object)DBNull.Value));
 
                     await _context.Database.OpenConnectionAsync();
+
                     using (var reader = await command.ExecuteReaderAsync())
                     {
-                        while (await reader.ReadAsync())
+                        if (await reader.ReadAsync())
                         {
-                            permissions.Add(new UserRolePermissionViewModel
-                            {
-                                Id = reader.GetInt32("Id"),
-                                UserId = reader.GetInt32("UserId"),
-                                RoleId = reader.GetInt32("RoleId"),
-                                ScreenId = reader.GetInt32("ScreenId"),
-                                CanRead = reader.GetBoolean("CanRead"),
-                                CanWrite = reader.GetBoolean("CanWrite"),
-                                CanEdit = reader.GetBoolean("CanEdit"),
-                                CanDelete = reader.GetBoolean("CanDelete"),
-                                UserName = reader.GetString("UserName"),
-                                RoleName = reader.GetString("RoleName"),
-                                ScreenName = reader.GetString("ScreenName"),
-                                URL = reader.IsDBNull("URL") ? "" : reader.GetString("URL")
-                            });
+                            var rowsDeleted = reader.GetInt32("RowsDeleted");
+                            return Ok(new { message = $"{rowsDeleted} permission(s) deleted successfully!" });
                         }
                     }
                 }
+
+                return Ok(new { message = "Permissions deleted successfully!" });
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"Error loading user permissions: {ex.Message}";
+                _logger.LogError(ex, "Error deleting permissions");
+                return StatusCode(500, new { message = "Error deleting permissions: " + ex.Message });
             }
-            finally
-            {
-                if (_context.Database.GetDbConnection().State == ConnectionState.Open)
-                {
-                    await _context.Database.CloseConnectionAsync();
-                }
-            }
-
-            ViewBag.UserName = permissions.FirstOrDefault()?.UserName ?? "Unknown User";
-            return View(permissions);
         }
 
-        // GET: UserRolePermission/RolePermissions/5
-        public async Task<IActionResult> RolePermissions(int roleId)
-        {
-            var permissions = new List<UserRolePermissionViewModel>();
-
-            try
-            {
-                using (var command = _context.Database.GetDbConnection().CreateCommand())
-                {
-                    command.CommandText = "sp_GetRolePermissions";
-                    command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.Add(new SqlParameter("@RoleId", roleId));
-
-                    await _context.Database.OpenConnectionAsync();
-                    using (var reader = await command.ExecuteReaderAsync())
-                    {
-                        while (await reader.ReadAsync())
-                        {
-                            permissions.Add(new UserRolePermissionViewModel
-                            {
-                                Id = reader.GetInt32("Id"),
-                                UserId = reader.GetInt32("UserId"),
-                                RoleId = reader.GetInt32("RoleId"),
-                                ScreenId = reader.GetInt32("ScreenId"),
-                                CanRead = reader.GetBoolean("CanRead"),
-                                CanWrite = reader.GetBoolean("CanWrite"),
-                                CanEdit = reader.GetBoolean("CanEdit"),
-                                CanDelete = reader.GetBoolean("CanDelete"),
-                                UserName = reader.GetString("UserName"),
-                                RoleName = reader.GetString("RoleName"),
-                                ScreenName = reader.GetString("ScreenName"),
-                                URL = reader.IsDBNull("URL") ? "" : reader.GetString("URL")
-                            });
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = $"Error loading role permissions: {ex.Message}";
-            }
-            finally
-            {
-                if (_context.Database.GetDbConnection().State == ConnectionState.Open)
-                {
-                    await _context.Database.CloseConnectionAsync();
-                }
-            }
-
-            ViewBag.RoleName = permissions.FirstOrDefault()?.RoleName ?? "Unknown Role";
-            return View(permissions);
-        }
-
-        // API: Check User Permission
+        // GET: Get All Screens for Permission Setup
         [HttpGet]
-        public async Task<IActionResult> CheckPermission(int userId, int screenId, string permissionType)
+        public async Task<IActionResult> GetAllScreens()
         {
             try
             {
+                var screens = new List<dynamic>();
+
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
-                    command.CommandText = "sp_CheckUserScreenPermission";
-                    command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.Add(new SqlParameter("@UserId", userId));
-                    command.Parameters.Add(new SqlParameter("@ScreenId", screenId));
-                    command.Parameters.Add(new SqlParameter("@PermissionType", permissionType));
+                    command.CommandText = "EXEC sp_GetAllScreensForPermission";
 
                     await _context.Database.OpenConnectionAsync();
-                    var result = await command.ExecuteScalarAsync();
-                    bool hasPermission = Convert.ToBoolean(result);
 
-                    return Json(new { hasPermission = hasPermission });
-                }
-            }
-            catch (Exception ex)
-            {
-                return Json(new { hasPermission = false, error = ex.Message });
-            }
-            finally
-            {
-                if (_context.Database.GetDbConnection().State == ConnectionState.Open)
-                {
-                    await _context.Database.CloseConnectionAsync();
-                }
-            }
-        }
-
-        private async Task<UserRolePermissionViewModel> GetPermissionById(int id)
-        {
-            try
-            {
-                using (var command = _context.Database.GetDbConnection().CreateCommand())
-                {
-                    command.CommandText = "sp_GetAllUserRolePermissions";
-                    command.CommandType = CommandType.StoredProcedure;
-
-                    await _context.Database.OpenConnectionAsync();
                     using (var reader = await command.ExecuteReaderAsync())
                     {
                         while (await reader.ReadAsync())
                         {
-                            if (reader.GetInt32("Id") == id)
+                            screens.Add(new
                             {
-                                return new UserRolePermissionViewModel
-                                {
-                                    Id = reader.GetInt32("Id"),
-                                    UserId = reader.GetInt32("UserId"),
-                                    RoleId = reader.GetInt32("RoleId"),
-                                    ScreenId = reader.GetInt32("ScreenId"),
-                                    CanRead = reader.GetBoolean("CanRead"),
-                                    CanWrite = reader.GetBoolean("CanWrite"),
-                                    CanEdit = reader.GetBoolean("CanEdit"),
-                                    CanDelete = reader.GetBoolean("CanDelete"),
-                                    UserName = reader.GetString("UserName"),
-                                    RoleName = reader.GetString("RoleName"),
-                                    ScreenName = reader.GetString("ScreenName"),
-                                    URL = reader.IsDBNull("URL") ? "" : reader.GetString("URL")
-                                };
-                            }
+                                id = reader.GetInt32("Id"),
+                                screenName = reader.GetString("ScreenName"),
+                                Url = reader.IsDBNull("Url") ? "" : reader.GetString("Url"),
+                                isActive = reader.GetBoolean("IsActive")
+                            });
                         }
                     }
                 }
+
+                return Json(screens);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error getting permission by ID: {ex.Message}");
+                _logger.LogError(ex, "Error getting all screens");
+                return StatusCode(500, new { message = "Error loading screens: " + ex.Message });
             }
-            finally
-            {
-                if (_context.Database.GetDbConnection().State == ConnectionState.Open)
-                {
-                    await _context.Database.CloseConnectionAsync();
-                }
-            }
-
-            return null;
         }
 
-        private async Task PopulateDropDowns()
+        // POST: Clear Permissions for User or Role
+        [HttpPost]
+        public async Task<IActionResult> ClearPermissions([FromBody] ClearPermissionsRequest request)
         {
             try
             {
-                ViewBag.Users = await _context.Users.Select(u => new { u.Id, u.UserName }).ToListAsync();
-                ViewBag.Roles = await _context.Roles.Select(r => new { r.Id, r.RoleName }).ToListAsync();
+                if (request == null || (request.UserId == null && request.RoleId == null))
+                {
+                    return BadRequest(new { message = "Either UserId or RoleId must be provided" });
+                }
+
+                var parameters = new[]
+                {
+                    new SqlParameter("@UserId", request.UserId ?? (object)DBNull.Value),
+                    new SqlParameter("@RoleId", request.RoleId ?? (object)DBNull.Value),
+                    new SqlParameter("@ScreenId", (object)DBNull.Value)
+                };
+
+                using (var command = _context.Database.GetDbConnection().CreateCommand())
+                {
+                    command.CommandText = "EXEC sp_DeleteUserRolePermissions @UserId, @RoleId, @ScreenId";
+                    command.Parameters.Add(new SqlParameter("@UserId", request.UserId ?? (object)DBNull.Value));
+                    command.Parameters.Add(new SqlParameter("@RoleId", request.RoleId ?? (object)DBNull.Value));
+                    command.Parameters.Add(new SqlParameter("@ScreenId", (object)DBNull.Value));
+
+                    await _context.Database.OpenConnectionAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            var rowsDeleted = reader.GetInt32("RowsDeleted");
+                            return Ok(new { message = $"{rowsDeleted} permission(s) cleared successfully!" });
+                        }
+                    }
+                }
+
+                return Ok(new { message = "Permissions cleared successfully!" });
             }
             catch (Exception ex)
             {
-                ViewBag.Users = new List<object>();
-                ViewBag.Roles = new List<object>();
-                TempData["Error"] = $"Error loading dropdown data: {ex.Message}";
+                _logger.LogError(ex, "Error clearing permissions");
+                return StatusCode(500, new { message = "Error clearing permissions: " + ex.Message });
             }
         }
+    }
+
+    // DTO Classes
+    public class GetPermissionsRequest
+    {
+        public int? UserId { get; set; }
+        public int? RoleId { get; set; }
+    }
+
+    public class UserRolePermissionDto
+    {
+        public int? UserId { get; set; }
+        public int? RoleId { get; set; }
+        public int ScreenId { get; set; }
+        public bool CanRead { get; set; }
+        public bool CanWrite { get; set; }
+        public bool CanEdit { get; set; }
+        public bool CanDelete { get; set; }
+    }
+
+    public class BulkSaveRequest
+    {
+        public int? UserId { get; set; }
+        public int? RoleId { get; set; }
+        public List<UserRolePermissionDto> Permissions { get; set; }
+    }
+
+    public class DeletePermissionsRequest
+    {
+        public int? UserId { get; set; }
+        public int? RoleId { get; set; }
+        public int? ScreenId { get; set; }
+    }
+
+    public class ClearPermissionsRequest
+    {
+        public int? UserId { get; set; }
+        public int? RoleId { get; set; }
     }
 }

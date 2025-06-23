@@ -1,145 +1,623 @@
-﻿@model Mini_Account_Management_System.Models.ViewModel.CreateUserRolePermissionViewModel
-
-@{
+﻿@{
     ViewData["Title"] = "Create User Role Permission";
 }
 
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card shadow">
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card permission-table">
                 <div class="card-header">
-                    <h3 class="card-title mb-0">
-                        <i class="fas fa-plus-circle"></i> Create New User Role Permission
-                    </h3>
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Create New User Role Permission
+                    </h4>
                 </div>
                 <div class="card-body">
-                    <form asp-action="Create" method="post">
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label">
-                                    <i class="fas fa-user"></i> User
-                                </label>
-                                <select asp-for="UserId" class="form-control" required>
-                                    <option value="">Select User</option>
+                    <!-- Alert Messages -->
+                    <div id="alertContainer"></div>
+
+                    <!-- User and Role Selection -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="fas fa-user me-2"></i>User
+                            </label>
+                            <select id="userSelect" class="form-select">
+                                <option value="">Select User</option>
+                                @if (ViewBag.Users != null)
+                                {
                                     @foreach (var user in ViewBag.Users)
                                     {
                                         <option value="@user.Id">@user.UserName</option>
                                     }
-                                </select>
-                                <span asp-validation-for="UserId" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">
-                                    <i class="fas fa-user-tag"></i> Role
-                                </label>
-                                <select asp-for="RoleId" class="form-control" required>
-                                    <option value="">Select Role</option>
+                                }
+                            </select>
+                            <small class="text-muted">Selecting a user will clear role selection</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="fas fa-users-cog me-2"></i>Role
+                            </label>
+                            <select id="roleSelect" class="form-select">
+                                <option value="">Select Role</option>
+                                @if (ViewBag.Roles != null)
+                                {
                                     @foreach (var role in ViewBag.Roles)
                                     {
                                         <option value="@role.Id">@role.RoleName</option>
                                     }
-                                </select>
-                                <span asp-validation-for="RoleId" class="text-danger"></span>
+                                }
+                            </select>
+                            <small class="text-muted">Selecting a role will clear user selection</small>
+                        </div>
+                    </div>
+
+                    <!-- Selection Info -->
+                    <div id="selectionInfo" class="alert alert-info" style="display: none;">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <span id="selectionText"></span>
+                    </div>
+
+                    <!-- Loading Spinner -->
+                    <div id="loadingSpinner" class="text-center loading-spinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading permissions...</p>
+                    </div>
+
+                    <!-- Permissions Table -->
+                    <div id="permissionsSection" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">Screen Permissions</h5>
+                            <div>
+                                <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="selectAllPermissions()">
+                                    <i class="fas fa-check-square me-1"></i>Select All
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearAllPermissions()">
+                                    <i class="fas fa-times-circle me-1"></i>Clear All
+                                </button>
                             </div>
                         </div>
 
                         <div class="table-responsive">
-                            <table class="table table-bordered table-striped">
-                                <thead class="table-light text-center">
+                            <table class="table table-hover table-bordered">
+                                <thead>
                                     <tr>
-                                        <th>SL</th>
+                                        <th style="width: 80px;">SL</th>
                                         <th>Screen Name</th>
-                                        <th>
-                                            <input type="checkbox" id="selectAllRead" /> Read
+                                        <th style="width: 100px;" class="text-center">
+                                            <input type="checkbox" id="readAll" class="form-check-input">
+                                            Read
                                         </th>
-                                        <th>
-                                            <input type="checkbox" id="selectAllWrite" /> Write
+                                        <th style="width: 100px;" class="text-center">
+                                            <input type="checkbox" id="writeAll" class="form-check-input">
+                                            Write
                                         </th>
-                                        <th>
-                                            <input type="checkbox" id="selectAllEdit" /> Edit
+                                        <th style="width: 100px;" class="text-center">
+                                            <input type="checkbox" id="editAll" class="form-check-input">
+                                            Edit
                                         </th>
-                                        <th>
-                                            <input type="checkbox" id="selectAllDelete" /> Delete
+                                        <th style="width: 100px;" class="text-center">
+                                            <input type="checkbox" id="deleteAll" class="form-check-input">
+                                            Delete
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    @for (int i = 0; i < Model.Permissions.Count; i++)
+                                <tbody id="permissionsTableBody">
+                                    @if (ViewBag.Screens != null)
                                     {
-                                        <tr class="text-center">
-                                            <td>@(i + 1)</td>
-                                            <td class="text-start">
-                                                @Model.Permissions[i].ScreenName
-                                                @* Fixed: Added proper hidden fields for model binding *@
-                                                <input type="hidden" asp-for="Permissions[@i].ScreenId" />
-                                                <input type="hidden" asp-for="Permissions[@i].ScreenName" />
-                                            </td>
-                                            <td>
-                                                <input type="checkbox" asp-for="Permissions[@i].CanRead" class="chkRead" />
-                                            </td>
-                                            <td>
-                                                <input type="checkbox" asp-for="Permissions[@i].CanWrite" class="chkWrite" />
-                                            </td>
-                                            <td>
-                                                <input type="checkbox" asp-for="Permissions[@i].CanEdit" class="chkEdit" />
-                                            </td>
-                                            <td>
-                                                <input type="checkbox" asp-for="Permissions[@i].CanDelete" class="chkDelete" />
-                                            </td>
-                                        </tr>
+                                        int index = 1;
+                                        @foreach (var screen in ViewBag.Screens)
+                                        {
+                                            <tr data-screen-id="@screen.Id">
+                                                <td>@index</td>
+                                                <td>
+                                                    <strong>@screen.ScreenName</strong>
+                                                    @if (!string.IsNullOrEmpty(screen.ScreenName))
+                                                    {
+                                                        <br>
+                                            
+                                                        <small class="text-muted">@screen.ScreenName</small>
+                                                    }
+                                                </td>
+                                                <td class="text-center checkbox-container">
+                                                    <input type="checkbox" class="form-check-input permission-check" data-permission="read">
+                                                </td>
+                                                <td class="text-center checkbox-container">
+                                                    <input type="checkbox" class="form-check-input permission-check" data-permission="write">
+                                                </td>
+                                                <td class="text-center checkbox-container">
+                                                    <input type="checkbox" class="form-check-input permission-check" data-permission="edit">
+                                                </td>
+                                                <td class="text-center checkbox-container">
+                                                    <input type="checkbox" class="form-check-input permission-check" data-permission="delete">
+                                                </td>
+                                            </tr>
+                                            index++;
+                                        }
                                     }
                                 </tbody>
                             </table>
                         </div>
 
-                        <div class="form-group text-center mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg mr-3">
-                                <i class="fas fa-save"></i> Save Permissions
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <div>
+                                <button type="button" class="btn btn-secondary me-2" onclick="goBack()">
+                                    <i class="fas fa-arrow-left me-2"></i>
+                                    Back to List
+                                </button>
+                                <button type="button" class="btn btn-warning" onclick="clearCurrentPermissions()">
+                                    <i class="fas fa-trash-alt me-2"></i>
+                                    Clear Existing
+                                </button>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="savePermissions()">
+                                <i class="fas fa-save me-2"></i>
+                                Save Permissions
                             </button>
-                            <a href="@Url.Action("Index")" class="btn btn-secondary btn-lg">
-                                <i class="fas fa-arrow-left"></i> Back to List
-                            </a>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+<!-- Anti-forgery token for AJAX requests -->
+@Html.AntiForgeryToken()
 
-    <script>
-        $(document).ready(function () {
-            function bindSelectAll(selectAllId, checkboxClass) {
-                // Select All checkbox click
-                $(`#${selectAllId}`).on("change", function () {
-                    $(`.${checkboxClass}`).prop("checked", this.checked);
-                });
+<style>
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
 
-                // Child checkbox change: if any unchecked, uncheck select all
-                $(document).on("change", `.${checkboxClass}`, function () {
-                    const total = $(`.${checkboxClass}`).length;
-                    const checked = $(`.${checkboxClass}:checked`).length;
-                    $(`#${selectAllId}`).prop("checked", total === checked);
+    .permission-table {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .table th {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+        font-weight: 600;
+    }
+
+    .form-select:focus, .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+    .btn-secondary {
+        background: #6c757d;
+        border: none;
+    }
+
+    .loading-spinner {
+        display: none;
+    }
+
+    .checkbox-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+
+    .alert {
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+
+    .btn-warning {
+        background-color: #f0ad4e;
+        border-color: #eea236;
+        color: white;
+    }
+
+        .btn-warning:hover {
+            background-color: #ec971f;
+            border-color: #d58512;
+            color: white;
+        }
+
+    .alert-dismissible .btn-close {
+        padding: 0.75rem 1rem;
+    }
+</style>
+
+<script>
+    // Global variables
+    let currentPermissions = [];
+    let isUserSelected = false;
+    let isRoleSelected = false;
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        // User selection change handler
+        document.getElementById('userSelect').addEventListener('change', function() {
+            const userId = this.value;
+
+            if (userId) {
+                // Clear role selection when user is selected
+                document.getElementById('roleSelect').value = '';
+                isUserSelected = true;
+                isRoleSelected = false;
+                updateSelectionInfo('user', this.options[this.selectedIndex].text);
+                loadPermissions();
+            } else {
+                isUserSelected = false;
+                hidePermissionsSection();
+            }
+        });
+
+        // Role selection change handler
+        document.getElementById('roleSelect').addEventListener('change', function() {
+            const roleId = this.value;
+
+            if (roleId) {
+                // Clear user selection when role is selected
+                document.getElementById('userSelect').value = '';
+                isRoleSelected = true;
+                isUserSelected = false;
+                updateSelectionInfo('role', this.options[this.selectedIndex].text);
+                loadPermissions();
+            } else {
+                isRoleSelected = false;
+                hidePermissionsSection();
+            }
+        });
+
+        // Select all functionality
+        document.getElementById('readAll').addEventListener('change', function() {
+            toggleAllPermissions('read', this.checked);
+        });
+        document.getElementById('writeAll').addEventListener('change', function() {
+            toggleAllPermissions('write', this.checked);
+        });
+        document.getElementById('editAll').addEventListener('change', function() {
+            toggleAllPermissions('edit', this.checked);
+        });
+        document.getElementById('deleteAll').addEventListener('change', function() {
+            toggleAllPermissions('delete', this.checked);
+        });
+    });
+
+    // Update selection information
+    function updateSelectionInfo(type, name) {
+        const selectionInfo = document.getElementById('selectionInfo');
+        const selectionText = document.getElementById('selectionText');
+
+        if (type && name) {
+            selectionText.textContent = `Setting permissions for ${type}: ${name}`;
+            selectionInfo.style.display = 'block';
+        } else {
+            selectionInfo.style.display = 'none';
+        }
+    }
+
+    // Hide permissions section
+    function hidePermissionsSection() {
+        document.getElementById('permissionsSection').style.display = 'none';
+        document.getElementById('selectionInfo').style.display = 'none';
+        clearAllPermissions();
+    }
+
+    // Load permissions based on user/role selection
+    async function loadPermissions() {
+        const userId = document.getElementById('userSelect').value;
+        const roleId = document.getElementById('roleSelect').value;
+
+        if (!userId && !roleId) {
+            hidePermissionsSection();
+            return;
+        }
+
+        // Show loading spinner
+        document.getElementById('loadingSpinner').style.display = 'block';
+        document.getElementById('permissionsSection').style.display = 'none';
+
+        try {
+            const response = await fetch('@Url.Action("GetPermissions", "UserRolePermission")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                },
+                body: JSON.stringify({
+                    userId: userId ? parseInt(userId) : null,
+                    roleId: roleId ? parseInt(roleId) : null
+                })
+            });
+
+            if (response.ok) {
+                const permissions = await response.json();
+                populatePermissions(permissions);
+
+                if (permissions.length > 0) {
+                    showAlert(`Found ${permissions.length} existing permission(s)`, 'success');
+                } else {
+                    showAlert('No existing permissions found. You can set new permissions.', 'info');
+                }
+            } else {
+                const error = await response.json();
+                showAlert(error.message || 'Error loading permissions', 'danger');
+            }
+        } catch (error) {
+            console.error('Error loading permissions:', error);
+            showAlert('Error loading permissions: ' + error.message, 'danger');
+        } finally {
+            // Hide loading spinner and show permissions section
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.getElementById('permissionsSection').style.display = 'block';
+        }
+    }
+
+    // Populate permissions in the table
+    function populatePermissions(permissions) {
+        // Clear all checkboxes first
+        clearAllPermissions();
+
+        // Set permissions based on data
+        permissions.forEach(permission => {
+            const row = document.querySelector(`tr[data-screen-id="${permission.screenId}"]`);
+            if (row) {
+                if (permission.canRead) {
+                    row.querySelector('[data-permission="read"]').checked = true;
+                }
+                if (permission.canWrite) {
+                    row.querySelector('[data-permission="write"]').checked = true;
+                }
+                if (permission.canEdit) {
+                    row.querySelector('[data-permission="edit"]').checked = true;
+                }
+                if (permission.canDelete) {
+                    row.querySelector('[data-permission="delete"]').checked = true;
+                }
+            }
+        });
+
+        // Update header checkboxes based on current state
+        updateHeaderCheckboxes();
+    }
+
+    // Toggle all permissions for a specific type
+    function toggleAllPermissions(permissionType, checked) {
+        const checkboxes = document.querySelectorAll(`[data-permission="${permissionType}"]`);
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = checked;
+        });
+    }
+
+    // Select all permissions
+    function selectAllPermissions() {
+        const allCheckboxes = document.querySelectorAll('.permission-check');
+        allCheckboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+
+        // Update header checkboxes
+        document.getElementById('readAll').checked = true;
+        document.getElementById('writeAll').checked = true;
+        document.getElementById('editAll').checked = true;
+        document.getElementById('deleteAll').checked = true;
+    }
+
+    // Clear all permissions
+    function clearAllPermissions() {
+        const allCheckboxes = document.querySelectorAll('.permission-check');
+        allCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+
+        // Clear header checkboxes
+        document.getElementById('readAll').checked = false;
+        document.getElementById('writeAll').checked = false;
+        document.getElementById('editAll').checked = false;
+        document.getElementById('deleteAll').checked = false;
+    }
+
+    // Update header checkboxes based on current state
+    function updateHeaderCheckboxes() {
+        const permissionTypes = ['read', 'write', 'edit', 'delete'];
+
+        permissionTypes.forEach(type => {
+            const checkboxes = document.querySelectorAll(`[data-permission="${type}"]`);
+            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+            const headerCheckbox = document.getElementById(`${type}All`);
+
+            if (checkedCount === 0) {
+                headerCheckbox.checked = false;
+                headerCheckbox.indeterminate = false;
+            } else if (checkedCount === checkboxes.length) {
+                headerCheckbox.checked = true;
+                headerCheckbox.indeterminate = false;
+            } else {
+                headerCheckbox.checked = false;
+                headerCheckbox.indeterminate = true;
+            }
+        });
+    }
+
+    // Save permissions
+    async function savePermissions() {
+        const userId = document.getElementById('userSelect').value;
+        const roleId = document.getElementById('roleSelect').value;
+
+        if (!userId && !roleId) {
+            showAlert('Please select either a user or role', 'warning');
+            return;
+        }
+
+        // Collect all permissions
+        const permissions = [];
+        const rows = document.querySelectorAll('#permissionsTableBody tr[data-screen-id]');
+
+        rows.forEach(row => {
+            const screenId = parseInt(row.getAttribute('data-screen-id'));
+            const canRead = row.querySelector('[data-permission="read"]').checked;
+            const canWrite = row.querySelector('[data-permission="write"]').checked;
+            const canEdit = row.querySelector('[data-permission="edit"]').checked;
+            const canDelete = row.querySelector('[data-permission="delete"]').checked;
+
+            // Only add permissions that have at least one permission checked
+            if (canRead || canWrite || canEdit || canDelete) {
+                permissions.push({
+                    userId: userId ? parseInt(userId) : null,
+                    roleId: roleId ? parseInt(roleId) : null,
+                    screenId: screenId,
+                    canRead: canRead,
+                    canWrite: canWrite,
+                    canEdit: canEdit,
+                    canDelete: canDelete
                 });
             }
-
-            bindSelectAll("selectAllRead", "chkRead");
-            bindSelectAll("selectAllWrite", "chkWrite");
-            bindSelectAll("selectAllEdit", "chkEdit");
-            bindSelectAll("selectAllDelete", "chkDelete");
-
-            // Debug: Log form data before submission
-            $('form').on('submit', function(e) {
-                console.log('Form data:');
-                $(this).serializeArray().forEach(function(item) {
-                    console.log(item.name + ': ' + item.value);
-                });
-            });
         });
-    </script>
-}
+
+        if (permissions.length === 0) {
+            showAlert('No permissions selected to save', 'warning');
+            return;
+        }
+
+        try {
+            const response = await fetch('@Url.Action("SavePermissions", "UserRolePermission")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                },
+                body: JSON.stringify(permissions)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showAlert(result.message, 'success');
+                // Optionally reload permissions to show updated state
+                loadPermissions();
+            } else {
+                showAlert(result.message || 'Error saving permissions', 'danger');
+                if (result.errors && result.errors.length > 0) {
+                    result.errors.forEach(error => {
+                        console.error('Permission error:', error);
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error saving permissions:', error);
+            showAlert('Error saving permissions: ' + error.message, 'danger');
+        }
+    }
+
+    // Clear current permissions
+    async function clearCurrentPermissions() {
+        const userId = document.getElementById('userSelect').value;
+        const roleId = document.getElementById('roleSelect').value;
+
+        if (!userId && !roleId) {
+            showAlert('Please select either a user or role', 'warning');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to clear all existing permissions for this user/role?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('@Url.Action("ClearPermissions", "UserRolePermission")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                },
+                body: JSON.stringify({
+                    userId: userId ? parseInt(userId) : null,
+                    roleId: roleId ? parseInt(roleId) : null
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showAlert(result.message, 'success');
+                // Clear the UI checkboxes
+                clearAllPermissions();
+            } else {
+                showAlert(result.message || 'Error clearing permissions', 'danger');
+            }
+        } catch (error) {
+            console.error('Error clearing permissions:', error);
+            showAlert('Error clearing permissions: ' + error.message, 'danger');
+        }
+    }
+
+    // Go back to list
+    function goBack() {
+        window.location.href = '@Url.Action("Index", "UserRolePermission")';
+    }
+
+    // Show alert message
+    function showAlert(message, type) {
+        const alertContainer = document.getElementById('alertContainer');
+        const alertId = 'alert-' + Date.now();
+
+        const alertHtml = `
+            <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
+                <i class="fas fa-${getAlertIcon(type)} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+
+        alertContainer.innerHTML = alertHtml;
+
+        // Auto-hide success and info alerts after 5 seconds
+        if (type === 'success' || type === 'info') {
+            setTimeout(() => {
+                const alertElement = document.getElementById(alertId);
+                if (alertElement) {
+                    alertElement.remove();
+                }
+            }, 5000);
+        }
+    }
+
+    // Get alert icon based on type
+    function getAlertIcon(type) {
+        switch (type) {
+            case 'success': return 'check-circle';
+            case 'danger': return 'exclamation-triangle';
+            case 'warning': return 'exclamation-circle';
+            case 'info': return 'info-circle';
+            default: return 'info-circle';
+        }
+    }
+</script>

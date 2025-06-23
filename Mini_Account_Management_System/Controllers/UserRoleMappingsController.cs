@@ -41,11 +41,13 @@ namespace Mini_Account_Management_System.Controllers
                         {
                             viewModel.Mappings.Add(new UserRoleMappingViewModel
                             {
-                                Id = reader.GetInt32(0),
-                                UserName = reader.GetString(1),
-                                RoleName = reader.GetString(2)
+                                Id = reader.IsDBNull(0) ? (int?)null : reader.GetInt32(0),        // urm.Id nullable
+                                UserId = reader.GetInt32(1),                                     // u.Id
+                                UserName = reader.GetString(2),                                  // u.UserName
+                                RoleName = reader.IsDBNull(3) ? null : reader.GetString(3)       // r.RoleName nullable
                             });
                         }
+
                     }
                 }
             }
@@ -91,7 +93,21 @@ namespace Mini_Account_Management_System.Controllers
         new SqlParameter("@RoleId", model.RoleId)
     };
 
-            await _context.Database.ExecuteSqlRawAsync("EXEC sp_InsertUserRoleMapping @UserId, @RoleId", parameters);
+            try
+            {
+                await _context.Database.ExecuteSqlRawAsync("EXEC sp_InsertUserRoleMapping @UserId, @RoleId", parameters);
+            }
+            catch (SqlException ex)
+            {
+                if (ex.Message.Contains("This user already has a role assigned"))
+                {
+                    ModelState.AddModelError("", "User already has a role assigned. Please update the existing role instead.");
+                    // return the view with the error
+                    return RedirectToAction(nameof(Index));
+                }
+                throw; // rethrow unknown exceptions
+            }
+
 
             return RedirectToAction(nameof(Index));
         }
@@ -194,7 +210,7 @@ namespace Mini_Account_Management_System.Controllers
 
             var model = new UserRoleMapping
             {
-                Id = data.Id,
+                Id = data.Id ?? 0,
                 UserId = data.UserId,
                 RoleId = data.RoleId
             };

@@ -26,7 +26,7 @@
         public bool CanEdit { get; set; }
         public bool CanDelete { get; set; }
 
-        public List<UserRolePermissionViewModel> Permissions { get; set; }
+        public List<UserRolePermissionViewModel> Permissions { get; set; } = new List<UserRolePermissionViewModel>();
     }
 
     public class EditUserRolePermissionViewModel
