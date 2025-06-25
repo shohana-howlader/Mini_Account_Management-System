@@ -2,6 +2,11 @@
     ViewData["Title"] = "Create User Role Permission";
 }
 
+<!-- Toastr CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+<!-- Toastr JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 <div class="container-fluid mt-4">
     <!-- Header -->
     <div class="row mb-4">
@@ -14,9 +19,6 @@
                     </h4>
                 </div>
                 <div class="card-body">
-                    <!-- Alert Messages -->
-                    <div id="alertContainer"></div>
-
                     <!-- User and Role Selection -->
                     <div class="row mb-4">
                         <div class="col-md-6">
@@ -59,16 +61,8 @@
                         <span id="selectionText"></span>
                     </div>
 
-                    <!-- Loading Spinner -->
-                    <div id="loadingSpinner" class="text-center loading-spinner">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p class="mt-2">Loading permissions...</p>
-                    </div>
-
                     <!-- Permissions Table -->
-                    <div id="permissionsSection" style="display: none;">
+                    <div id="permissionsSection">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="mb-0">Screen Permissions</h5>
                             <div>
@@ -88,20 +82,16 @@
                                         <th style="width: 80px;">SL</th>
                                         <th>Screen Name</th>
                                         <th style="width: 100px;" class="text-center">
-                                            <input type="checkbox" id="readAll" class="form-check-input">
-                                            Read
+                                            <input type="checkbox" id="readAll" class="form-check-input"> Read
                                         </th>
                                         <th style="width: 100px;" class="text-center">
-                                            <input type="checkbox" id="writeAll" class="form-check-input">
-                                            Write
+                                            <input type="checkbox" id="writeAll" class="form-check-input"> Write
                                         </th>
                                         <th style="width: 100px;" class="text-center">
-                                            <input type="checkbox" id="editAll" class="form-check-input">
-                                            Edit
+                                            <input type="checkbox" id="editAll" class="form-check-input"> Edit
                                         </th>
                                         <th style="width: 100px;" class="text-center">
-                                            <input type="checkbox" id="deleteAll" class="form-check-input">
-                                            Delete
+                                            <input type="checkbox" id="deleteAll" class="form-check-input"> Delete
                                         </th>
                                     </tr>
                                 </thead>
@@ -109,19 +99,11 @@
                                     @if (ViewBag.Screens != null)
                                     {
                                         int index = 1;
-                                        @foreach (var screen in ViewBag.Screens)
+                                        foreach (var screen in ViewBag.Screens)
                                         {
                                             <tr data-screen-id="@screen.Id">
                                                 <td>@index</td>
-                                                <td>
-                                                    <strong>@screen.ScreenName</strong>
-                                                    @if (!string.IsNullOrEmpty(screen.ScreenName))
-                                                    {
-                                                        <br>
-                                            
-                                                        <small class="text-muted">@screen.ScreenName</small>
-                                                    }
-                                                </td>
+                                                <td><strong>@screen.ScreenName</strong></td>
                                                 <td class="text-center checkbox-container">
                                                     <input type="checkbox" class="form-check-input permission-check" data-permission="read">
                                                 </td>
@@ -142,9 +124,7 @@
                             </table>
                         </div>
 
-                        <!-- Action Buttons -->
                         <div class="d-flex justify-content-between mt-4">
-                           
                             <button type="button" class="btn btn-primary" onclick="savePermissions()">
                                 <i class="fas fa-save me-2"></i>
                                 Save Permissions
@@ -157,343 +137,78 @@
     </div>
 </div>
 
-<!-- Anti-forgery token for AJAX requests -->
 @Html.AntiForgeryToken()
 
-
 <script>
-    // Global variables
-    let currentPermissions = [];
-    let isUserSelected = false;
-    let isRoleSelected = false;
-
-    // Event listeners
-    document.addEventListener('DOMContentLoaded', function() {
-        // User selection change handler
-        document.getElementById('userSelect').addEventListener('change', function() {
-            const userId = this.value;
-
-            if (userId) {
-                // Clear role selection when user is selected
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('userSelect').addEventListener('change', function () {
+            if (this.value) {
                 document.getElementById('roleSelect').value = '';
-                isUserSelected = true;
-                isRoleSelected = false;
                 updateSelectionInfo('user', this.options[this.selectedIndex].text);
-                loadPermissions();
-            } else {
-                isUserSelected = false;
-                hidePermissionsSection();
             }
         });
-
-        // Role selection change handler
-        document.getElementById('roleSelect').addEventListener('change', function() {
-            const roleId = this.value;
-
-            if (roleId) {
-                // Clear user selection when role is selected
+        document.getElementById('roleSelect').addEventListener('change', function () {
+            if (this.value) {
                 document.getElementById('userSelect').value = '';
-                isRoleSelected = true;
-                isUserSelected = false;
                 updateSelectionInfo('role', this.options[this.selectedIndex].text);
-                loadPermissions();
-            } else {
-                isRoleSelected = false;
-                hidePermissionsSection();
             }
         });
 
-        // Select all functionality
-        document.getElementById('readAll').addEventListener('change', function() {
-            toggleAllPermissions('read', this.checked);
-        });
-        document.getElementById('writeAll').addEventListener('change', function() {
-            toggleAllPermissions('write', this.checked);
-        });
-        document.getElementById('editAll').addEventListener('change', function() {
-            toggleAllPermissions('edit', this.checked);
-        });
-        document.getElementById('deleteAll').addEventListener('change', function() {
-            toggleAllPermissions('delete', this.checked);
+        ['read', 'write', 'edit', 'delete'].forEach(type => {
+            document.getElementById(`${type}All`).addEventListener('change', function () {
+                document.querySelectorAll(`[data-permission="${type}"]`).forEach(cb => cb.checked = this.checked);
+            });
         });
     });
 
-    // Update selection information
     function updateSelectionInfo(type, name) {
-        const selectionInfo = document.getElementById('selectionInfo');
-        const selectionText = document.getElementById('selectionText');
-
-        if (type && name) {
-            selectionText.textContent = `Setting permissions for ${type}: ${name}`;
-            selectionInfo.style.display = 'block';
-        } else {
-            selectionInfo.style.display = 'none';
-        }
+        const info = document.getElementById('selectionInfo');
+        const text = document.getElementById('selectionText');
+        text.textContent = `Setting permissions for ${type}: ${name}`;
+        info.style.display = 'block';
     }
 
-    // Hide permissions section
-    function hidePermissionsSection() {
-        document.getElementById('permissionsSection').style.display = 'none';
-        document.getElementById('selectionInfo').style.display = 'none';
-        clearAllPermissions();
+    function selectAllPermissions() {
+        document.querySelectorAll('.permission-check').forEach(cb => cb.checked = true);
+        ['readAll', 'writeAll', 'editAll', 'deleteAll'].forEach(id => document.getElementById(id).checked = true);
     }
 
-    // Load permissions based on user/role selection
+    function clearAllPermissions() {
+        document.querySelectorAll('.permission-check').forEach(cb => cb.checked = false);
+        ['readAll', 'writeAll', 'editAll', 'deleteAll'].forEach(id => document.getElementById(id).checked = false);
+    }
 
+    async function savePermissions() {
+        const userId = document.getElementById('userSelect').value || null;
+        const roleId = document.getElementById('roleSelect').value || null;
 
+        if (!userId && !roleId) return toastr.warning('Please select either a user or role');
 
+        const permissions = Array.from(document.querySelectorAll('#permissionsTableBody tr[data-screen-id]')).map(row => ({
+            screenId: parseInt(row.dataset.screenId),
+            canRead: row.querySelector('[data-permission="read"]').checked,
+            canWrite: row.querySelector('[data-permission="write"]').checked,
+            canEdit: row.querySelector('[data-permission="edit"]').checked,
+            canDelete: row.querySelector('[data-permission="delete"]').checked
+        }));
 
-
-
-    async function loadPermissions() {
-        const userId = document.getElementById('userSelect').value;
-        const roleId = document.getElementById('roleSelect').value;
-
-        if (!userId && !roleId) {
-            hidePermissionsSection();
-            return;
-        }
-
-        // Show loading spinner
-        document.getElementById('loadingSpinner').style.display = 'block';
-        document.getElementById('permissionsSection').style.display = 'none';
+        if (permissions.length === 0) return toastr.warning('No permissions found to save');
 
         try {
-            const response = await fetch('@Url.Action("GetPermissions", "UserRolePermission")', {
+            const response = await fetch('@Url.Action("SavePermissions", "UserRolePermission")', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
                 },
-                body: JSON.stringify({
-                    userId: userId ? parseInt(userId) : null,
-                    roleId: roleId ? parseInt(roleId) : null
-                })
+                body: JSON.stringify({ userId: userId ? parseInt(userId) : null, roleId: roleId ? parseInt(roleId) : null, permissions })
             });
 
-            if (response.ok) {
-                const permissions = await response.json();
-                populatePermissions(permissions);
-
-                if (permissions.length > 0) {
-                    showAlert(`Found ${permissions.length} existing permission(s)`, 'success');
-                } else {
-                    showAlert('No existing permissions found. You can set new permissions.', 'info');
-                }
-            } else {
-                const error = await response.json();
-                showAlert(error.message || 'Error loading permissions', 'danger');
-            }
+            const result = await response.json();
+            if (response.ok) toastr.success('Permissions saved successfully');
+            else toastr.error(result.message || 'Error saving permissions');
         } catch (error) {
-            console.error('Error loading permissions:', error);
-            showAlert('Error loading permissions: ' + error.message, 'danger');
-        } finally {
-            // Hide loading spinner and show permissions section
-            document.getElementById('loadingSpinner').style.display = 'none';
-            document.getElementById('permissionsSection').style.display = 'block';
-        }
-    }
-
-    // Populate permissions in the table
-    function populatePermissions(permissions) {
-        // Clear all checkboxes first
-        clearAllPermissions();
-
-        // Set permissions based on data
-        permissions.forEach(permission => {
-            const row = document.querySelector(`tr[data-screen-id="${permission.screenId}"]`);
-            if (row) {
-                if (permission.canRead) {
-                    row.querySelector('[data-permission="read"]').checked = true;
-                }
-                if (permission.canWrite) {
-                    row.querySelector('[data-permission="write"]').checked = true;
-                }
-                if (permission.canEdit) {
-                    row.querySelector('[data-permission="edit"]').checked = true;
-                }
-                if (permission.canDelete) {
-                    row.querySelector('[data-permission="delete"]').checked = true;
-                }
-            }
-        });
-
-        // Update header checkboxes based on current state
-        updateHeaderCheckboxes();
-    }
-
-    // Toggle all permissions for a specific type
-    function toggleAllPermissions(permissionType, checked) {
-        const checkboxes = document.querySelectorAll(`[data-permission="${permissionType}"]`);
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = checked;
-        });
-    }
-
-    // Select all permissions
-    function selectAllPermissions() {
-        const allCheckboxes = document.querySelectorAll('.permission-check');
-        allCheckboxes.forEach(checkbox => {
-            checkbox.checked = true;
-        });
-
-        // Update header checkboxes
-        document.getElementById('readAll').checked = true;
-        document.getElementById('writeAll').checked = true;
-        document.getElementById('editAll').checked = true;
-        document.getElementById('deleteAll').checked = true;
-    }
-
-    // Clear all permissions
-    function clearAllPermissions() {
-        const allCheckboxes = document.querySelectorAll('.permission-check');
-        allCheckboxes.forEach(checkbox => {
-            checkbox.checked = false;
-        });
-
-        // Clear header checkboxes
-        document.getElementById('readAll').checked = false;
-        document.getElementById('writeAll').checked = false;
-        document.getElementById('editAll').checked = false;
-        document.getElementById('deleteAll').checked = false;
-    }
-
-    // Update header checkboxes based on current state
-    function updateHeaderCheckboxes() {
-        const permissionTypes = ['read', 'write', 'edit', 'delete'];
-
-        permissionTypes.forEach(type => {
-            const checkboxes = document.querySelectorAll(`[data-permission="${type}"]`);
-            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
-            const headerCheckbox = document.getElementById(`${type}All`);
-
-            if (checkedCount === 0) {
-                headerCheckbox.checked = false;
-                headerCheckbox.indeterminate = false;
-            } else if (checkedCount === checkboxes.length) {
-                headerCheckbox.checked = true;
-                headerCheckbox.indeterminate = false;
-            } else {
-                headerCheckbox.checked = false;
-                headerCheckbox.indeterminate = true;
-            }
-        });
-    }
-
-
- // Fixed savePermissions function
-async function savePermissions() {
-    const userIdValue = document.getElementById('userSelect').value;
-    const roleIdValue = document.getElementById('roleSelect').value;
-
-    // Convert to integers or null, not empty strings
-    const userId = userIdValue ? parseInt(userIdValue) : null;
-    const roleId = roleIdValue ? parseInt(roleIdValue) : null;
-
-    if (userId == null && roleId == null) {
-        showAlert('Please select either a user or role', 'warning');
-        return;
-    }
-
-    const permissions = [];
-    const rows = document.querySelectorAll('#permissionsTableBody tr[data-screen-id]');
-
-    rows.forEach(row => {
-        const screenId = parseInt(row.getAttribute('data-screen-id'));
-        const canRead = row.querySelector('[data-permission="read"]').checked;
-        const canWrite = row.querySelector('[data-permission="write"]').checked;
-        const canEdit = row.querySelector('[data-permission="edit"]').checked;
-        const canDelete = row.querySelector('[data-permission="delete"]').checked;
-
-        // Always add the permission entry (even if all false)
-        permissions.push({
-            screenId,
-            canRead,
-            canWrite,
-            canEdit,
-            canDelete
-        });
-    });
-
-    if (permissions.length === 0) {
-        showAlert('No permissions found to save', 'warning');
-        return;
-    }
-
-    const payload = {
-        userId: userId,
-        roleId: roleId,
-        permissions: permissions
-    };
-
-    console.log('Sending payload:', JSON.stringify(payload, null, 2)); // Debug log
-
-    try {
-        const response = await fetch('@Url.Action("SavePermissions", "UserRolePermission")', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
-            },
-            body: JSON.stringify(payload)
-        });
-
-        const result = await response.json();
-        debugger    ;
-        if (response.ok) {
-            showAlert( 'Permissions saved successfully', 'success');
-            loadPermissions(); // Reload to show updated permissions
-        } else {
-            showAlert(result.message || 'Error saving permissions', 'danger');
-            if (result.errors?.length) {
-                result.errors.forEach(error => console.error('Permission error:', error));
-            }
-        }
-    } catch (error) {
-        console.error('Error saving permissions:', error);
-        showAlert('Error saving permissions: ' + error.message, 'danger');
-    }
-}
-
-
-
-   
-
-
-    // Show alert message
-    function showAlert(message, type) {
-        const alertContainer = document.getElementById('alertContainer');
-        const alertId = 'alert-' + Date.now();
-
-        const alertHtml = `
-            <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
-                <i class="fas fa-${getAlertIcon(type)} me-2"></i>
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        `;
-
-        alertContainer.innerHTML = alertHtml;
-
-        // Auto-hide success and info alerts after 5 seconds
-        if (type === 'success' || type === 'info') {
-            setTimeout(() => {
-                const alertElement = document.getElementById(alertId);
-                if (alertElement) {
-                    alertElement.remove();
-                }
-            }, 5000);
-        }
-    }
-
-    // Get alert icon based on type
-    function getAlertIcon(type) {
-        switch (type) {
-            case 'success': return 'check-circle';
-            case 'danger': return 'exclamation-triangle';
-            case 'warning': return 'exclamation-circle';
-            case 'info': return 'info-circle';
-            default: return 'info-circle';
+            toastr.error('Error saving permissions: ' + error.message);
         }
     }
 </script>

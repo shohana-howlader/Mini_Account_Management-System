@@ -72,41 +72,17 @@ namespace Mini_Account_Management_System.Controllers
                     return BadRequest(new { message = "Either UserId or RoleId must be provided" });
                 }
 
-                var parameters = new[]
-                {
-                    new SqlParameter("@UserId", request.UserId ?? (object)DBNull.Value),
-                    new SqlParameter("@RoleId", request.RoleId ?? (object)DBNull.Value)
-                };
-
-                // Use stored procedure to get permissions with joins
-                var query = @"
-                    DECLARE @temp TABLE (
-                        Id INT,
-                        UserId INT,
-                        UserName NVARCHAR(255),
-                        RoleId INT,
-                        RoleName NVARCHAR(255),
-                        ScreenId INT,
-                        ScreenName NVARCHAR(255),
-                        CanRead BIT,
-                        CanWrite BIT,
-                        CanEdit BIT,
-                        CanDelete BIT
-                    );
-                    
-                    INSERT INTO @temp
-                    EXEC sp_GetUserRolePermissions @UserId, @RoleId;
-                    
-                    SELECT * FROM @temp;
-                ";
-
                 var permissionsData = new List<dynamic>();
 
                 using (var command = _context.Database.GetDbConnection().CreateCommand())
                 {
-                    command.CommandText = query;
-                    command.Parameters.Add(new SqlParameter("@UserId", request.UserId ?? (object)DBNull.Value));
-                    command.Parameters.Add(new SqlParameter("@RoleId", request.RoleId ?? (object)DBNull.Value));
+                    command.CommandText = "sp_GetUserRolePermissions";
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    var userIdParam = new SqlParameter("@UserId", request.UserId ?? (object)DBNull.Value);
+                    var roleIdParam = new SqlParameter("@RoleId", request.RoleId ?? (object)DBNull.Value);
+                    command.Parameters.Add(userIdParam);
+                    command.Parameters.Add(roleIdParam);
 
                     await _context.Database.OpenConnectionAsync();
 
@@ -116,20 +92,22 @@ namespace Mini_Account_Management_System.Controllers
                         {
                             permissionsData.Add(new
                             {
-                                id = reader.GetInt32("Id"),
-                                userId = reader.IsDBNull("UserId") ? (int?)null : reader.GetInt32("UserId"),
-                                userName = reader.IsDBNull("UserName") ? "" : reader.GetString("UserName"),
-                                roleId = reader.IsDBNull("RoleId") ? (int?)null : reader.GetInt32("RoleId"),
-                                roleName = reader.IsDBNull("RoleName") ? "" : reader.GetString("RoleName"),
-                                screenId = reader.GetInt32("ScreenId"),
-                                screenName = reader.IsDBNull("ScreenName") ? "" : reader.GetString("ScreenName"),
-                                canRead = reader.GetBoolean("CanRead"),
-                                canWrite = reader.GetBoolean("CanWrite"),
-                                canEdit = reader.GetBoolean("CanEdit"),
-                                canDelete = reader.GetBoolean("CanDelete")
+                                id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                userId = reader.IsDBNull(reader.GetOrdinal("UserId")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("UserId")),
+                                userName = reader.IsDBNull(reader.GetOrdinal("UserName")) ? "" : reader.GetString(reader.GetOrdinal("UserName")),
+                                roleId = reader.IsDBNull(reader.GetOrdinal("RoleId")) ? (int?)null : reader.GetInt32(reader.GetOrdinal("RoleId")),
+                                roleName = reader.IsDBNull(reader.GetOrdinal("RoleName")) ? "" : reader.GetString(reader.GetOrdinal("RoleName")),
+                                screenId = reader.GetInt32(reader.GetOrdinal("ScreenId")),
+                                screenName = reader.IsDBNull(reader.GetOrdinal("ScreenName")) ? "" : reader.GetString(reader.GetOrdinal("ScreenName")),
+                                canRead = reader.GetBoolean(reader.GetOrdinal("CanRead")),
+                                canWrite = reader.GetBoolean(reader.GetOrdinal("CanWrite")),
+                                canEdit = reader.GetBoolean(reader.GetOrdinal("CanEdit")),
+                                canDelete = reader.GetBoolean(reader.GetOrdinal("CanDelete"))
                             });
                         }
                     }
+
+                    await _context.Database.CloseConnectionAsync();
                 }
 
                 return Json(permissionsData);
@@ -138,71 +116,62 @@ namespace Mini_Account_Management_System.Controllers
             {
                 _logger.LogError(ex, "Error getting permissions for UserId: {UserId}, RoleId: {RoleId}",
                     request?.UserId, request?.RoleId);
+
                 return StatusCode(500, new { message = "Error loading permissions: " + ex.Message });
             }
         }
 
 
+
         [HttpPost]
-        [ValidateAntiForgeryToken] // Add this attribute
         public async Task<IActionResult> SavePermissions([FromBody] CreateUserRolePermissionViewModel model)
         {
             try
             {
                 if (model == null)
-                {
-                    _logger.LogWarning("SavePermissions called with null model");
                     return BadRequest(new { message = "Request body is null" });
-                }
 
-                _logger.LogInformation("SavePermissions called with UserId: {UserId}, RoleId: {RoleId}, Permissions count: {Count}",
-                    model.UserId, model.RoleId, model.Permissions?.Count ?? 0);
-
-                // Check if both UserId and RoleId are null/0
                 if ((!model.UserId.HasValue || model.UserId == 0) && (!model.RoleId.HasValue || model.RoleId == 0))
-                {
                     return BadRequest(new { message = "Either UserId or RoleId must be provided and greater than 0." });
-                }
 
                 if (model.Permissions == null || !model.Permissions.Any())
-                {
                     return BadRequest(new { message = "Permissions are required." });
-                }
 
-                // Convert UserId and RoleId to proper values for database
-                var userIdParam = model.UserId.HasValue && model.UserId > 0 ? model.UserId.Value : (object)DBNull.Value;
-                var roleIdParam = model.RoleId.HasValue && model.RoleId > 0 ? model.RoleId.Value : (object)DBNull.Value;
+                var validPermissions = model.Permissions
+                 .Where(p => p.ScreenId != 0 &&
+                             (p.CanRead || p.CanWrite || p.CanEdit || p.CanDelete))
+                 .ToList();
 
-                var permissionJson = JsonSerializer.Serialize(model.Permissions);
-                _logger.LogInformation("Serialized permissions JSON: {Json}", permissionJson);
+
+                if (!validPermissions.Any())
+                    return BadRequest(new { message = "No valid permissions provided." });
+
+                var permissionJson = JsonSerializer.Serialize(validPermissions);
 
                 var parameters = new[]
                 {
-            new SqlParameter("@UserId", userIdParam),
-            new SqlParameter("@RoleId", roleIdParam),
-            new SqlParameter("@Permissionjson", permissionJson)
+            new SqlParameter("@UserId", SqlDbType.Int) { Value = model.UserId ?? (object)DBNull.Value },
+            new SqlParameter("@RoleId", SqlDbType.Int) { Value = model.RoleId ?? (object)DBNull.Value },
+            new SqlParameter("@Permissionjson", SqlDbType.NVarChar) { Value = permissionJson }
         };
 
                 var result = await _context.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_InsertMultipleUserRolePermissions @UserId, @RoleId, @Permissionjson",
-                    parameters
-                );
-
-                _logger.LogInformation("Stored procedure executed successfully. Result: {Result}", result);
+                    "EXEC sp_InsertMultipleUserRolePermissions @UserId, @RoleId, @Permissionjson", parameters);
 
                 return Ok(new { message = "Permissions saved successfully" });
             }
             catch (SqlException sqlEx)
             {
-                _logger.LogError(sqlEx, "SQL error occurred while saving permissions");
-                return StatusCode(500, new { message = "Database error occurred while saving permissions", error = sqlEx.Message });
+                _logger.LogError(sqlEx, "SQL error occurred");
+                return StatusCode(500, new { message = "Database error", error = sqlEx.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while saving permissions");
-                return StatusCode(500, new { message = "An error occurred while saving permissions", error = ex.Message });
+                _logger.LogError(ex, "Unexpected error");
+                return StatusCode(500, new { message = "Unexpected error", error = ex.Message });
             }
         }
+
 
 
 
