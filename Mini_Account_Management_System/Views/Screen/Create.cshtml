@@ -64,25 +64,25 @@
     }
 
     <script>
-        // Add URL validation
-        document.querySelector('input[name="URL"]').addEventListener('blur', function () {
-            const url = this.value.trim();
-            if (url && !url.match(/^https?:\/\/.+/)) {
-                this.classList.add('is-invalid');
-                let feedback = this.parentNode.querySelector('.invalid-feedback');
-                if (!feedback) {
-                    feedback = document.createElement('div');
-                    feedback.className = 'invalid-feedback';
-                    this.parentNode.appendChild(feedback);
-                }
-                feedback.textContent = 'Please enter a valid URL starting with http:// or https://';
-            } else {
-                this.classList.remove('is-invalid');
-                const feedback = this.parentNode.querySelector('.invalid-feedback');
-                if (feedback) {
-                    feedback.remove();
-                }
-            }
-        });
+        // // Add URL validation
+        // document.querySelector('input[name="URL"]').addEventListener('blur', function () {
+        //     const url = this.value.trim();
+        //     if (url && !url.match(/^https?:\/\/.+/)) {
+        //         this.classList.add('is-invalid');
+        //         let feedback = this.parentNode.querySelector('.invalid-feedback');
+        //         if (!feedback) {
+        //             feedback = document.createElement('div');
+        //             feedback.className = 'invalid-feedback';
+        //             this.parentNode.appendChild(feedback);
+        //         }
+        //         feedback.textContent = 'Please enter a valid URL starting with http:// or https://';
+        //     } else {
+        //         this.classList.remove('is-invalid');
+        //         const feedback = this.parentNode.querySelector('.invalid-feedback');
+        //         if (feedback) {
+        //             feedback.remove();
+        //         }
+        //     }
+        // });
     </script>
 }

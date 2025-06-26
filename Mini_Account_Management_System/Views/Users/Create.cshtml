@@ -11,13 +11,20 @@
                     <h4 class="card-title mb-0">Create New User</h4>
                 </div>
                 <div class="card-body">
-                    @if (TempData["SuccessMessage"] != null)
-                    {
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            @TempData["SuccessMessage"]
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+
+                    <!-- Toast Placeholder -->
+                    <div aria-live="polite" aria-atomic="true" class="position-relative">
+                        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999">
+                            <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="d-flex">
+                                    <div class="toast-body" id="toastBody">
+                                        <!-- Message will appear here -->
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                            </div>
                         </div>
-                    }
+                    </div>
 
                     <form asp-action="Create" method="post">
                         <div asp-validation-summary="ModelOnly" class="text-danger alert alert-danger"></div>
@@ -30,7 +37,6 @@
                                     <span asp-validation-for="UserName" class="text-danger"></span>
                                 </div>
                             </div>
-                            
                         </div>
 
                         <div class="form-group mb-3">
@@ -79,6 +85,18 @@
                 passwordIcon.classList.add('fa-eye');
             }
         }
+
+        // Toast display logic
+            window.addEventListener('DOMContentLoaded', () => {
+            const successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"]));
+            if (successMessage) {
+                const toastEl = document.getElementById('toastMessage');
+                const toastBody = document.getElementById('toastBody');
+                toastBody.textContent = successMessage;
+                const bsToast = new bootstrap.Toast(toastEl);
+                bsToast.show();
+            }
+        });
     </script>
 }
 

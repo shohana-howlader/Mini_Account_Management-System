@@ -3,16 +3,32 @@
   "WorkspaceRootPath": "C:\\Users\\shawlader\\Downloadsnew\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\controllers\\userscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\controllers\\userscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\controllers\\userrolepermissioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\controllers\\userrolepermissioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\views\\users\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\views\\users\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\views\\users\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\views\\users\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\views\\screen\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\views\\screen\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\views\\userrolepermission\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\views\\userrolepermission\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\models\\viewmodel\\userrolepermissionviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -26,7 +42,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -34,20 +50,72 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Users\\Index.cshtml",
+              "RelativeDocumentMoniker": "Mini_Account_Management_System\\Views\\Users\\Index.cshtml",
+              "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Users\\Index.cshtml",
+              "RelativeToolTip": "Mini_Account_Management_System\\Views\\Users\\Index.cshtml",
+              "ViewState": "AgIAAGwAAAAAAAAAAAAmwH8AAAALAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-06-26T05:16:00.942Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Create.cshtml",
+              "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Screen\\Create.cshtml",
+              "RelativeDocumentMoniker": "Mini_Account_Management_System\\Views\\Screen\\Create.cshtml",
+              "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Screen\\Create.cshtml",
+              "RelativeToolTip": "Mini_Account_Management_System\\Views\\Screen\\Create.cshtml",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAEkAAABAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-06-26T04:44:43.431Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "UsersController.cs",
+              "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Controllers\\UsersController.cs",
+              "RelativeDocumentMoniker": "Mini_Account_Management_System\\Controllers\\UsersController.cs",
+              "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Controllers\\UsersController.cs*",
+              "RelativeToolTip": "Mini_Account_Management_System\\Controllers\\UsersController.cs*",
+              "ViewState": "AgIAACkAAAAAAAAAAAAIwDcAAAA5AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-26T04:22:20.853Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Create.cshtml",
+              "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Users\\Create.cshtml",
+              "RelativeDocumentMoniker": "Mini_Account_Management_System\\Views\\Users\\Create.cshtml",
+              "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Users\\Create.cshtml",
+              "RelativeToolTip": "Mini_Account_Management_System\\Views\\Users\\Create.cshtml",
+              "ViewState": "AgIAAEoAAAAAAAAAAAAIwGIAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-06-26T04:21:10.631Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
               "Title": "_Layout.cshtml",
               "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Shared\\_Layout.cshtml",
               "RelativeDocumentMoniker": "Mini_Account_Management_System\\Views\\Shared\\_Layout.cshtml",
-              "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Shared\\_Layout.cshtml*",
-              "RelativeToolTip": "Mini_Account_Management_System\\Views\\Shared\\_Layout.cshtml*",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Shared\\_Layout.cshtml",
+              "RelativeToolTip": "Mini_Account_Management_System\\Views\\Shared\\_Layout.cshtml",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAAAF8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-06-25T12:50:44.696Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 7,
               "Title": "UserRolePermissionViewModel.cs",
               "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Models\\ViewModel\\UserRolePermissionViewModel.cs",
               "RelativeDocumentMoniker": "Mini_Account_Management_System\\Models\\ViewModel\\UserRolePermissionViewModel.cs",
@@ -55,31 +123,30 @@
               "RelativeToolTip": "Mini_Account_Management_System\\Models\\ViewModel\\UserRolePermissionViewModel.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAsAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-25T12:00:04.326Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-25T12:00:04.326Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 5,
               "Title": "Create.cshtml",
               "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\UserRolePermission\\Create.cshtml",
               "RelativeDocumentMoniker": "Mini_Account_Management_System\\Views\\UserRolePermission\\Create.cshtml",
               "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\UserRolePermission\\Create.cshtml",
               "RelativeToolTip": "Mini_Account_Management_System\\Views\\UserRolePermission\\Create.cshtml",
-              "ViewState": "AgIAAMMAAAAAAAAAAAAAANYAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAL0AAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-06-25T04:27:35.084Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "UserRolePermissionController.cs",
               "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Controllers\\UserRolePermissionController.cs",
               "RelativeDocumentMoniker": "Mini_Account_Management_System\\Controllers\\UserRolePermissionController.cs",
               "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Controllers\\UserRolePermissionController.cs",
               "RelativeToolTip": "Mini_Account_Management_System\\Controllers\\UserRolePermissionController.cs",
-              "ViewState": "AgIAAHYAAAAAAAAAAAAcwH8AAAAIAAAAAAAAAA==",
+              "ViewState": "AgIAAI4AAAAAAAAAAAAcwH8AAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-06-25T04:27:27.042Z",
               "EditorCaption": ""

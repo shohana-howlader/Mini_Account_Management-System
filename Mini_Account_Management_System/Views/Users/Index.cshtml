@@ -113,6 +113,19 @@
             eyeIcon.classList.add('fa-eye-slash');
         }
     }
+
+
+     // Toast display logic
+            window.addEventListener('DOMContentLoaded', () => {
+            const successMessage = @Html.Raw(Json.Serialize(TempData["SuccessMessage"]));
+            if (successMessage) {
+                const toastEl = document.getElementById('toastMessage');
+                const toastBody = document.getElementById('toastBody');
+                toastBody.textContent = successMessage;
+                const bsToast = new bootstrap.Toast(toastEl);
+                bsToast.show();
+            }
+        });
 </script>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">

@@ -2,10 +2,6 @@
     ViewData["Title"] = "Create User Role Permission";
 }
 
-<!-- Toastr CSS -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
-<!-- Toastr JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
 <div class="container-fluid mt-4">
     <!-- Header -->
@@ -141,22 +137,51 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('userSelect').addEventListener('change', function () {
+        const userSelect = document.getElementById('userSelect');
+        const roleSelect = document.getElementById('roleSelect');
+        const selectionInfo = document.getElementById('selectionInfo');
+        const selectionText = document.getElementById('selectionText');
+
+        // User select event
+        userSelect.addEventListener('change', function () {
             if (this.value) {
-                document.getElementById('roleSelect').value = '';
+                roleSelect.value = '';
+                roleSelect.disabled = true;
                 updateSelectionInfo('user', this.options[this.selectedIndex].text);
-            }
-        });
-        document.getElementById('roleSelect').addEventListener('change', function () {
-            if (this.value) {
-                document.getElementById('userSelect').value = '';
-                updateSelectionInfo('role', this.options[this.selectedIndex].text);
+            } else {
+                roleSelect.disabled = false;
+                selectionInfo.style.display = 'none';
             }
         });
 
+        // Role select event
+        roleSelect.addEventListener('change', function () {
+            if (this.value) {
+                userSelect.value = '';
+                userSelect.disabled = true;
+                updateSelectionInfo('role', this.options[this.selectedIndex].text);
+            } else {
+                userSelect.disabled = false;
+                selectionInfo.style.display = 'none';
+            }
+        });
+
+        // Master checkbox change and sync with individual
         ['read', 'write', 'edit', 'delete'].forEach(type => {
-            document.getElementById(`${type}All`).addEventListener('change', function () {
-                document.querySelectorAll(`[data-permission="${type}"]`).forEach(cb => cb.checked = this.checked);
+            const masterCheckbox = document.getElementById(`${type}All`);
+            const individualCheckboxes = document.querySelectorAll(`[data-permission="${type}"]`);
+
+            // Master checkbox controls all
+            masterCheckbox.addEventListener('change', function () {
+                individualCheckboxes.forEach(cb => cb.checked = this.checked);
+            });
+
+            // Individual checkboxes sync master checkbox
+            individualCheckboxes.forEach(cb => {
+                cb.addEventListener('change', function () {
+                    const allChecked = Array.from(individualCheckboxes).every(box => box.checked);
+                    masterCheckbox.checked = allChecked;
+                });
             });
         });
     });
@@ -182,7 +207,10 @@
         const userId = document.getElementById('userSelect').value || null;
         const roleId = document.getElementById('roleSelect').value || null;
 
-        if (!userId && !roleId) return toastr.warning('Please select either a user or role');
+        if (!userId && !roleId) {
+            toastr.warning('Please select either a user or role');
+            return;
+        }
 
         const permissions = Array.from(document.querySelectorAll('#permissionsTableBody tr[data-screen-id]')).map(row => ({
             screenId: parseInt(row.dataset.screenId),
@@ -192,7 +220,10 @@
             canDelete: row.querySelector('[data-permission="delete"]').checked
         }));
 
-        if (permissions.length === 0) return toastr.warning('No permissions found to save');
+        if (permissions.length === 0) {
+            toastr.warning('No permissions found to save');
+            return;
+        }
 
         try {
             const response = await fetch('@Url.Action("SavePermissions", "UserRolePermission")', {
@@ -201,14 +232,30 @@
                     'Content-Type': 'application/json',
                     'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
                 },
-                body: JSON.stringify({ userId: userId ? parseInt(userId) : null, roleId: roleId ? parseInt(roleId) : null, permissions })
+                body: JSON.stringify({
+                    userId: userId ? parseInt(userId) : null,
+                    roleId: roleId ? parseInt(roleId) : null,
+                    permissions
+                })
             });
 
             const result = await response.json();
-            if (response.ok) toastr.success('Permissions saved successfully');
-            else toastr.error(result.message || 'Error saving permissions');
+            if (response.ok) {
+                toastr.success('Permissions saved successfully');
+
+                // Reset all inputs after success
+                document.getElementById('userSelect').value = '';
+                document.getElementById('roleSelect').value = '';
+                document.getElementById('userSelect').disabled = false;
+                document.getElementById('roleSelect').disabled = false;
+                document.getElementById('selectionInfo').style.display = 'none';
+                clearAllPermissions();
+            } else {
+                toastr.error(result.message || 'Error saving permissions');
+            }
         } catch (error) {
             toastr.error('Error saving permissions: ' + error.message);
         }
     }
 </script>
+
