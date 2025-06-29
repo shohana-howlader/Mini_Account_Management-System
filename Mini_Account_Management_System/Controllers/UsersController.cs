@@ -25,6 +25,30 @@ namespace Mini_Account_Management_System.Controllers
             return View(users);
         }
 
+
+        // Add this new method to your existing controller
+
+        public async Task<IActionResult> GetUsers()
+        {
+            try
+            {
+                var users = await GetAllUsersAsync();
+                var userData = users.Select(u => new {
+                    id = u.Id,
+                    userName = u.UserName,
+                    password = u.Password,
+                    createdDate = u.CreatedDate.ToString("yyyy-MM-ddTHH:mm:ss")
+                }).ToList();
+
+                return Json(userData);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return Json(new { error = "Failed to load users" });
+            }
+        }
+
         // GET: User/Details/5
         public async Task<IActionResult> Details(int id)
         {
@@ -44,23 +68,35 @@ namespace Mini_Account_Management_System.Controllers
 
         // POST: User/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(User user)
+        [IgnoreAntiforgeryToken] // remove if you implement antiforgery tokens properly
+        public async Task<IActionResult> Create([FromBody] User user)
         {
-            if (ModelState.IsValid)
+            if (user == null || string.IsNullOrWhiteSpace(user.UserName) || string.IsNullOrWhiteSpace(user.Password))
+            {
+                return BadRequest(new { message = "Username and Password are required." });
+            }
+
+            try
             {
                 var createdUser = await InsertUserAsync(user);
-                if (createdUser != null)
+
+                if (createdUser != null && createdUser.Id > 0)
                 {
-                    TempData["SuccessMessage"] = "User created successfully!";
-                    return RedirectToAction(nameof(Index));
+                    return Ok(new { message = "User created successfully!" });
                 }
                 else
                 {
-                    ModelState.AddModelError("", "Failed to create user.");
+                    return StatusCode(500, new { message = "Failed to create user." });
                 }
+
             }
-            return View(user);
+            catch (Exception ex)
+            {
+                // log exception here
+
+                return StatusCode(500, new { message = "Server error: " + ex.Message });
+            }
+           
         }
 
         // GET: User/Edit/5
@@ -196,38 +232,36 @@ namespace Mini_Account_Management_System.Controllers
             User createdUser = null;
 
             using (var connection = new SqlConnection(_connectionString))
+            using (var command = new SqlCommand("sp_InsertUser", connection))
             {
-                using (var command = new SqlCommand("sp_InsertUser", connection))
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@UserName", user.UserName);
+                command.Parameters.AddWithValue("@Password", user.Password);
+
+                if (user.CreatedDate != default(DateTime))
                 {
-                    command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@UserName", user.UserName);
-                    command.Parameters.AddWithValue("@Password", user.Password);
+                    command.Parameters.AddWithValue("@CreatedDate", user.CreatedDate);
+                }
 
-                    // CreatedDate parameter is optional in the stored procedure
-                    if (user.CreatedDate != default(DateTime))
+                await connection.OpenAsync();
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    if (await reader.ReadAsync())
                     {
-                        command.Parameters.AddWithValue("@CreatedDate", user.CreatedDate);
-                    }
-
-                    await connection.OpenAsync();
-                    using (var reader = await command.ExecuteReaderAsync())
-                    {
-                        if (await reader.ReadAsync())
+                        createdUser = new User
                         {
-                            createdUser = new User
-                            {
-                                Id = reader.GetInt32("Id"),
-                                UserName = reader.GetString("UserName"),
-                                Password = reader.GetString("Password"),
-                                CreatedDate = reader.GetDateTime("CreatedDate")
-                            };
-                        }
+                            Id = reader["Id"] != DBNull.Value ? Convert.ToInt32(reader["Id"]) : 0,
+                            UserName = reader["UserName"]?.ToString(),
+                            Password = reader["Password"]?.ToString(),
+                            CreatedDate = reader["CreatedDate"] != DBNull.Value ? Convert.ToDateTime(reader["CreatedDate"]) : DateTime.MinValue
+                        };
                     }
                 }
             }
 
             return createdUser;
         }
+
 
         private async Task<User> UpdateUserAsync(User user)
         {
