@@ -3,7 +3,7 @@
 createApp({
     data() {
         return {
-            users: [],
+            userList: [],
             isLoading: true,
             showToast: false,
             toastMessage: '',
@@ -14,6 +14,7 @@ createApp({
         };
     },
     mounted() {
+        
         this.loadUsers();
     },
     methods: {
@@ -24,7 +25,7 @@ createApp({
                 const response = await fetch('/Users/GetUsers');
                 if (response.ok) {
                     const data = await response.json();
-                    this.users = data.map(user => ({
+                    this.userList = data.map(user => ({
                         ...user,
                         showPassword: false
                     }));
@@ -40,7 +41,7 @@ createApp({
         },
 
         togglePassword(userId) {
-            const user = this.users.find(u => u.id === userId);
+            const user = this.userList.find(u => u.id === userId);
             if (user) {
                 user.showPassword = !user.showPassword;
             }
@@ -92,7 +93,7 @@ createApp({
 
                 if (response.ok) {
                     // Remove user from local array
-                    this.users = this.users.filter(u => u.id !== this.userToDelete.id);
+                    this.userList = this.userList.filter(u => u.id !== this.userToDelete.id);
                     this.showToastMessage(`User "${this.userToDelete.userName}" deleted successfully!`, 'success');
                 } else {
                     this.showToastMessage('Failed to delete user. Please try again.', 'error');

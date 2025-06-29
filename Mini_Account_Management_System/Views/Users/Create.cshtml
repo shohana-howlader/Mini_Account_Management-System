@@ -45,13 +45,15 @@
                             </div>
                         </div>
 
+
+                          <div class="col-md-6">
                         <div class="form-group mb-3">
                             <label class="form-label">Password *</label>
                             <div class="input-group">
                                 <input :type="showPassword ? 'text' : 'password'" 
                                        v-model="user.Password" 
                                        class="form-control" 
-                                       :class="{ 'is-invalid': errors.Password }"
+                                      @*  :class="{ 'is-invalid': errors.Password }" *@
                                        placeholder="Enter password"
                                        :value="user.Password"
                                        autocomplete="new-password" />
@@ -62,6 +64,7 @@
                             <div class="invalid-feedback" v-if="errors.Password" style="display: block;">
                                 {{ errors.Password }}
                             </div>
+                        </div>
                         </div>
 
                         <div class="form-group mt-4">

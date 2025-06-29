@@ -35,12 +35,15 @@ createApp({
 
             if (!this.user.Password || this.user.Password.trim() === '') {
                 this.errors.Password = "Password is required.";
+            } else if (this.user.Password.length < 8) {
+                this.errors.Password = "Password must be at least 8 characters long.";
             } else if (this.user.Password.length > 255) {
                 this.errors.Password = "Password cannot exceed 255 characters.";
             }
 
             return Object.keys(this.errors).length === 0;
         },
+
 
         showToastMessage(message, type = 'success') {
             this.toastMessage = message;
