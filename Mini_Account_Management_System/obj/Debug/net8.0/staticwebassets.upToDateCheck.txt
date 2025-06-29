@@ -59,6 +59,7 @@ wwwroot\lib\jquery\dist\jquery.min.js
 wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
 wwwroot\vue\User\Create.js
+wwwroot\vue\User\Edit.js
 wwwroot\vue\User\Index.js
 wwwroot\vue\vue.cjs.js
 wwwroot\vue\vue.cjs.min.js
@@ -85,4 +86,3 @@ wwwroot\vue\vue.runtime.global.min.js
 wwwroot\vue\vue.runtime.global.prod.js
 wwwroot\vue\vue.runtime.global.prod.min.js
 wwwroot\vue\Vueglobel.js
-wwwroot\vue\User\Edit.js

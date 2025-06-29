@@ -99,16 +99,18 @@ namespace Mini_Account_Management_System.Controllers
             }
             catch (SqlException ex)
             {
+                TempData["error"] = "This user already has a role assigned.";
                 if (ex.Message.Contains("This user already has a role assigned"))
                 {
                     ModelState.AddModelError("", "User already has a role assigned. Please update the existing role instead.");
+
                     // return the view with the error
                     return RedirectToAction(nameof(Index));
                 }
                 throw; // rethrow unknown exceptions
             }
 
-
+            TempData["SuccessMessage"] = "User role mapping created successfully.";
             return RedirectToAction(nameof(Index));
         }
 
