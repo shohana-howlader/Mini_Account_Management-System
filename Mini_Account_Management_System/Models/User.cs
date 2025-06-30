@@ -6,6 +6,14 @@ namespace Mini_Account_Management_System.Models
     {
         public int Id { get; set; }
 
+
+
+        [Required]
+        [StringLength(100)]
+        [Display(Name = "User FullName")]
+        public string FullName { get; set; }
+
+
         [Required]
         [StringLength(100)]
         [Display(Name = "User Name")]

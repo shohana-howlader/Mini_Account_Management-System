@@ -54,9 +54,9 @@ namespace Mini_Account_Management_System.Models
 
             // Seed data remains unchanged
             modelBuilder.Entity<Role>().HasData(
-                new Role { Id = 1, RoleName = "Admin" },
-                new Role { Id = 2, RoleName = "Accountant" },
-                new Role { Id = 3, RoleName = "User" }
+            new Role { Id = 1, RoleName = "Admin" },
+            new Role { Id = 2, RoleName = "Accountant" },
+            new Role { Id = 3, RoleName = "User" }
             );
 
             modelBuilder.Entity<Screen>().HasData(

@@ -12,7 +12,7 @@ using Mini_Account_Management_System.Models;
 namespace Mini_Account_Management_System.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250619071110_init")]
+    [Migration("20250629094226_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -142,6 +142,11 @@ namespace Mini_Account_Management_System.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -155,6 +160,41 @@ namespace Mini_Account_Management_System.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Mini_Account_Management_System.Models.UserRoleMapping", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RoleId1")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId1")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("RoleId1");
+
+                    b.HasIndex("UserId1");
+
+                    b.HasIndex("UserId", "RoleId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_UserRoleMapping_UserId_RoleId");
+
+                    b.ToTable("UserRoleMappings");
                 });
 
             modelBuilder.Entity("Mini_Account_Management_System.Models.UserRolePermission", b =>
@@ -177,13 +217,13 @@ namespace Mini_Account_Management_System.Migrations
                     b.Property<bool>("CanWrite")
                         .HasColumnType("bit");
 
-                    b.Property<int>("RoleId")
+                    b.Property<int?>("RoleId")
                         .HasColumnType("int");
 
                     b.Property<int>("ScreenId")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -197,13 +237,107 @@ namespace Mini_Account_Management_System.Migrations
                     b.ToTable("UserRolePermissions");
                 });
 
-            modelBuilder.Entity("Mini_Account_Management_System.Models.UserRolePermission", b =>
+            modelBuilder.Entity("Mini_Account_Management_System.Models.ViewModel.UserRoleMappingViewModel", b =>
                 {
-                    b.HasOne("Mini_Account_Management_System.Models.Role", "Role")
+                    b.Property<int?>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RoleName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView(null, (string)null);
+                });
+
+            modelBuilder.Entity("Mini_Account_Management_System.Models.ViewModel.UserRolePermissionViewModel", b =>
+                {
+                    b.Property<bool>("CanDelete")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanEdit")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanRead")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanWrite")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RoleName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ScreenId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ScreenName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("URL")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable("UserRolePermission");
+                });
+
+            modelBuilder.Entity("Mini_Account_Management_System.Models.UserRoleMapping", b =>
+                {
+                    b.HasOne("Mini_Account_Management_System.Models.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Mini_Account_Management_System.Models.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId1");
+
+                    b.HasOne("Mini_Account_Management_System.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Mini_Account_Management_System.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId1");
+
+                    b.Navigation("Role");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Mini_Account_Management_System.Models.UserRolePermission", b =>
+                {
+                    b.HasOne("Mini_Account_Management_System.Models.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId");
 
                     b.HasOne("Mini_Account_Management_System.Models.Screen", "Screen")
                         .WithMany("UserRolePermissions")
@@ -213,9 +347,7 @@ namespace Mini_Account_Management_System.Migrations
 
                     b.HasOne("Mini_Account_Management_System.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Role");
 

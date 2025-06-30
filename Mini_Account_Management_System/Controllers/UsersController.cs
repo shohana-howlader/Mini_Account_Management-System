@@ -35,6 +35,7 @@ namespace Mini_Account_Management_System.Controllers
                 var users = await GetAllUsersAsync();
                 var userData = users.Select(u => new {
                     id = u.Id,
+                    fullName=u.FullName,
                     userName = u.UserName,
                     password = u.Password,
                     createdDate = u.CreatedDate.ToString("yyyy-MM-ddTHH:mm:ss")
@@ -99,8 +100,8 @@ namespace Mini_Account_Management_System.Controllers
            
         }
 
-        
-        // GET: User/Edit/5
+
+        // GET: Users/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
             var user = await GetUserByIdAsync(id);
@@ -108,10 +109,17 @@ namespace Mini_Account_Management_System.Controllers
             {
                 return NotFound();
             }
+
+            // Check if this is an AJAX request
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(user);
+            }
+
             return View(user);
         }
 
-        // POST: User/Edit/5
+        // POST: Users/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, User user)
@@ -126,6 +134,12 @@ namespace Mini_Account_Management_System.Controllers
                 var updatedUser = await UpdateUserAsync(user);
                 if (updatedUser != null)
                 {
+                    // Check if this is an AJAX request
+                    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    {
+                        return Json(new { success = true, message = "User updated successfully!", user = updatedUser });
+                    }
+
                     TempData["SuccessMessage"] = "User updated successfully!";
                     return RedirectToAction(nameof(Index));
                 }
@@ -134,6 +148,19 @@ namespace Mini_Account_Management_System.Controllers
                     ModelState.AddModelError("", "User not found or failed to update.");
                 }
             }
+
+            // Handle AJAX validation errors
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                var errors = ModelState
+                    .Where(x => x.Value.Errors.Count > 0)
+                    .ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+                return Json(new { success = false, errors = errors });
+            }
+
             return View(user);
         }
 
@@ -185,6 +212,7 @@ namespace Mini_Account_Management_System.Controllers
                             users.Add(new User
                             {
                                 Id = reader.GetInt32("Id"),
+                                FullName = reader.GetString("FullName"),
                                 UserName = reader.GetString("UserName"),
                                 Password = reader.GetString("Password"),
                                 CreatedDate = reader.GetDateTime("CreatedDate")
@@ -200,7 +228,6 @@ namespace Mini_Account_Management_System.Controllers
         private async Task<User> GetUserByIdAsync(int id)
         {
             User user = null;
-
             using (var connection = new SqlConnection(_connectionString))
             {
                 using (var command = new SqlCommand("sp_GetUserById", connection))
@@ -216,16 +243,17 @@ namespace Mini_Account_Management_System.Controllers
                             user = new User
                             {
                                 Id = reader.GetInt32("Id"),
-                                UserName = reader.GetString("UserName"),
-                                Password = reader.GetString("Password"),
+                                FullName = reader.IsDBNull("FullName") ? null : reader.GetString("FullName"),
+                                UserName = reader.IsDBNull("UserName") ? null : reader.GetString("UserName"),
+                                Password = reader.IsDBNull("Password") ? null : reader.GetString("Password"),
                                 CreatedDate = reader.GetDateTime("CreatedDate")
                             };
                         }
                     }
                 }
             }
-
             return user;
+
         }
 
         private async Task<User> InsertUserAsync(User user)
@@ -236,6 +264,7 @@ namespace Mini_Account_Management_System.Controllers
             using (var command = new SqlCommand("sp_InsertUser", connection))
             {
                 command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@FullName", user.FullName);
                 command.Parameters.AddWithValue("@UserName", user.UserName);
                 command.Parameters.AddWithValue("@Password", user.Password);
 
@@ -252,6 +281,7 @@ namespace Mini_Account_Management_System.Controllers
                         createdUser = new User
                         {
                             Id = reader["Id"] != DBNull.Value ? Convert.ToInt32(reader["Id"]) : 0,
+                            FullName = reader["FullName"]?.ToString(),
                             UserName = reader["UserName"]?.ToString(),
                             Password = reader["Password"]?.ToString(),
                             CreatedDate = reader["CreatedDate"] != DBNull.Value ? Convert.ToDateTime(reader["CreatedDate"]) : DateTime.MinValue
@@ -267,15 +297,15 @@ namespace Mini_Account_Management_System.Controllers
         private async Task<User> UpdateUserAsync(User user)
         {
             User updatedUser = null;
-
             using (var connection = new SqlConnection(_connectionString))
             {
                 using (var command = new SqlCommand("sp_UpdateUser", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("@Id", user.Id);
-                    command.Parameters.AddWithValue("@UserName", user.UserName);
-                    command.Parameters.AddWithValue("@Password", user.Password);
+                    command.Parameters.AddWithValue("@FullName", user.FullName ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@UserName", user.UserName ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@Password", user.Password ?? (object)DBNull.Value);
 
                     await connection.OpenAsync();
                     using (var reader = await command.ExecuteReaderAsync())
@@ -285,15 +315,15 @@ namespace Mini_Account_Management_System.Controllers
                             updatedUser = new User
                             {
                                 Id = reader.GetInt32("Id"),
-                                UserName = reader.GetString("UserName"),
-                                Password = reader.GetString("Password"),
+                                FullName = reader.IsDBNull("FullName") ? null : reader.GetString("FullName"),
+                                UserName = reader.IsDBNull("UserName") ? null : reader.GetString("UserName"),
+                                Password = reader.IsDBNull("Password") ? null : reader.GetString("Password"),
                                 CreatedDate = reader.GetDateTime("CreatedDate")
                             };
                         }
                     }
                 }
             }
-
             return updatedUser;
         }
 
