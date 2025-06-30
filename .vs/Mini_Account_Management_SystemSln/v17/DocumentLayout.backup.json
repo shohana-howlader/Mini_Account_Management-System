@@ -3,36 +3,28 @@
   "WorkspaceRootPath": "C:\\Users\\shawlader\\Downloadsnew\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\views\\users\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\views\\users\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\wwwroot\\vue\\user\\user.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\wwwroot\\vue\\user\\user.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\controllers\\userscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\controllers\\userscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\views\\users\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\views\\users\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\controllers\\rolescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\controllers\\rolescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\views\\users\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\views\\users\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\views\\users\\delete.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\views\\users\\delete.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\views\\roles\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\views\\roles\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\views\\users\\details.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\views\\users\\details.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\wwwroot\\vue\\user\\user.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\wwwroot\\vue\\user\\user.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\views\\roles\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\views\\roles\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|c:\\users\\shawlader\\downloadsnew\\mini_account_management_system\\views\\roles\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B080E7B4-62A8-4375-8220-F9FEB261B89B}|Mini_Account_Management_System\\Mini_Account_Management_System.csproj|solutionrelative:mini_account_management_system\\views\\roles\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -42,106 +34,85 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 6,
           "Children": [
             {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "user.js",
-              "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\wwwroot\\vue\\User\\user.js",
-              "RelativeDocumentMoniker": "Mini_Account_Management_System\\wwwroot\\vue\\User\\user.js",
-              "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\wwwroot\\vue\\User\\user.js",
-              "RelativeToolTip": "Mini_Account_Management_System\\wwwroot\\vue\\User\\user.js",
-              "ViewState": "AgIAAFUBAAAAAAAAAAAIwPUBAAAZAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-06-29T11:15:47.465Z",
-              "EditorCaption": ""
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 1,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Users\\Index.cshtml",
               "RelativeDocumentMoniker": "Mini_Account_Management_System\\Views\\Users\\Index.cshtml",
               "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Users\\Index.cshtml",
               "RelativeToolTip": "Mini_Account_Management_System\\Views\\Users\\Index.cshtml",
-              "ViewState": "AgIAAHUAAAAAAAAAAAAAAIMAAAAgAAAAAAAAAA==",
+              "ViewState": "AgIAAHsAAAAAAAAAAAAAAAQAAAAsAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-06-29T10:30:54.723Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "User.cs",
-              "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Models\\User.cs",
-              "RelativeDocumentMoniker": "Mini_Account_Management_System\\Models\\User.cs",
-              "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Models\\User.cs",
-              "RelativeToolTip": "Mini_Account_Management_System\\Models\\User.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAeAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-29T10:15:09.415Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "UsersController.cs",
-              "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Controllers\\UsersController.cs",
-              "RelativeDocumentMoniker": "Mini_Account_Management_System\\Controllers\\UsersController.cs",
-              "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Controllers\\UsersController.cs",
-              "RelativeToolTip": "Mini_Account_Management_System\\Controllers\\UsersController.cs",
-              "ViewState": "AgIAANgAAAAAAAAAAAAvwAEBAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-29T10:14:35.289Z",
+              "WhenOpened": "2025-06-30T10:43:15.299Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
+              "Title": "user.js",
+              "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\wwwroot\\vue\\User\\user.js",
+              "RelativeDocumentMoniker": "Mini_Account_Management_System\\wwwroot\\vue\\User\\user.js",
+              "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\wwwroot\\vue\\User\\user.js",
+              "RelativeToolTip": "Mini_Account_Management_System\\wwwroot\\vue\\User\\user.js",
+              "ViewState": "AgIAAOIBAAAAAAAAAAAqwBEAAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-06-30T10:38:38.075Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "Create.cshtml",
-              "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Users\\Create.cshtml",
-              "RelativeDocumentMoniker": "Mini_Account_Management_System\\Views\\Users\\Create.cshtml",
-              "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Users\\Create.cshtml",
-              "RelativeToolTip": "Mini_Account_Management_System\\Views\\Users\\Create.cshtml",
-              "ViewState": "AgIAAF0AAAAAAAAAAAAAAGcAAAABAAAAAAAAAA==",
+              "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Roles\\Create.cshtml",
+              "RelativeDocumentMoniker": "Mini_Account_Management_System\\Views\\Roles\\Create.cshtml",
+              "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Roles\\Create.cshtml",
+              "RelativeToolTip": "Mini_Account_Management_System\\Views\\Roles\\Create.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-06-29T10:32:26.307Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Edit.cshtml",
-              "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Users\\Edit.cshtml",
-              "RelativeDocumentMoniker": "Mini_Account_Management_System\\Views\\Users\\Edit.cshtml",
-              "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Users\\Edit.cshtml",
-              "RelativeToolTip": "Mini_Account_Management_System\\Views\\Users\\Edit.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAIgAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-06-29T10:49:23.343Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "Details.cshtml",
-              "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Users\\Details.cshtml",
-              "RelativeDocumentMoniker": "Mini_Account_Management_System\\Views\\Users\\Details.cshtml",
-              "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Users\\Details.cshtml",
-              "RelativeToolTip": "Mini_Account_Management_System\\Views\\Users\\Details.cshtml",
-              "ViewState": "AgIAACcAAAAAAAAAAAAAABEAAABVAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-06-29T10:51:05.899Z"
+              "WhenOpened": "2025-06-30T10:27:38.261Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
-              "Title": "Delete.cshtml",
-              "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Users\\Delete.cshtml",
-              "RelativeDocumentMoniker": "Mini_Account_Management_System\\Views\\Users\\Delete.cshtml",
-              "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Users\\Delete.cshtml",
-              "RelativeToolTip": "Mini_Account_Management_System\\Views\\Users\\Delete.cshtml",
-              "ViewState": "AgIAADwAAAAAAAAAAAAAABkAAAAAAAAAAAAAAA==",
+              "Title": "Edit.cshtml",
+              "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Roles\\Edit.cshtml",
+              "RelativeDocumentMoniker": "Mini_Account_Management_System\\Views\\Roles\\Edit.cshtml",
+              "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Roles\\Edit.cshtml",
+              "RelativeToolTip": "Mini_Account_Management_System\\Views\\Roles\\Edit.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-06-29T10:53:20.538Z"
+              "WhenOpened": "2025-06-30T10:27:33.88Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Roles\\Index.cshtml",
+              "RelativeDocumentMoniker": "Mini_Account_Management_System\\Views\\Roles\\Index.cshtml",
+              "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Views\\Roles\\Index.cshtml",
+              "RelativeToolTip": "Mini_Account_Management_System\\Views\\Roles\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAACAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-06-30T10:11:46.429Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "RolesController.cs",
+              "DocumentMoniker": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Controllers\\RolesController.cs",
+              "RelativeDocumentMoniker": "Mini_Account_Management_System\\Controllers\\RolesController.cs",
+              "ToolTip": "C:\\Users\\shawlader\\Downloadsnew\\Mini_Account_Management_System\\Controllers\\RolesController.cs",
+              "RelativeToolTip": "Mini_Account_Management_System\\Controllers\\RolesController.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAxwBgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-30T10:11:30.909Z",
+              "EditorCaption": ""
             }
           ]
         }
